@@ -53,22 +53,22 @@ JWRAG stores all metadata and vector embeddings locally inside a single SQLite d
 ```sql
 -- Track documents in the watched directory
 CREATE TABLE IF NOT EXISTS documents (
-    id TEXT PRIMARY KEY,               -- UUID or normalized relative path
-    filepath TEXT UNIQUE NOT NULL,     -- Absolute or relative file path
-    filename TEXT NOT NULL,            -- Base name of the file
-    file_hash TEXT NOT NULL,           -- MD5/SHA256 checksum to detect changes
-    last_modified REAL NOT NULL,       -- Unix timestamp of last modification
-    indexed_at REAL NOT NULL           -- Timestamp of last indexing
+    id TEXT PRIMARY KEY,                -- UUID or normalized relative path
+    filepath TEXT UNIQUE NOT NULL,      -- Absolute or relative file path
+    filename TEXT NOT NULL,             -- Base name of the file
+    file_hash TEXT NOT NULL,            -- MD5/SHA256 checksum to detect changes
+    last_modified REAL NOT NULL,        -- Unix timestamp of last modification
+    indexed_at REAL NOT NULL            -- Timestamp of last indexing
 );
 
 -- Store document chunks and their associated vector embeddings
 CREATE TABLE IF NOT EXISTS document_chunks (
-    id TEXT PRIMARY KEY,               -- Unique chunk ID (e.g., doc_id_index)
-    document_id TEXT NOT NULL,         -- Foreign key referencing documents.id
-    chunk_index INTEGER NOT NULL,      -- Ordering index of chunk in document
-    text_content TEXT NOT NULL,        -- Actual text segment
-    embedding BLOB NOT NULL,           -- Serialized float array (e.g. np.ndarray.tobytes())
-    metadata TEXT NOT NULL,            -- JSON string storing arbitrary metadata (page, etc.)
+    id TEXT PRIMARY KEY,                -- Unique chunk ID (e.g., doc_id_index)
+    document_id TEXT NOT NULL,          -- Foreign key referencing documents.id
+    chunk_index INTEGER NOT NULL,       -- Ordering index of chunk in document
+    text_content TEXT NOT NULL,         -- Actual text segment
+    embedding BLOB NOT NULL,            -- Serialized float array (e.g. np.ndarray.tobytes())
+    metadata TEXT NOT NULL,             -- JSON string storing arbitrary metadata (page, etc.)
     FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
 );
 
@@ -112,7 +112,7 @@ class SynthesisOption:
 class SynthesisResult:
     query: str
     options: List[SynthesisOption]
-    references: List[str]  # List of filenames
+    references: List[str]   # List of filenames
 ```
 
 ---
@@ -129,12 +129,12 @@ To maintain a strict offline, air-gapped status, JWRAG utilizes local embedding 
 
 ### 2. Context Ingestion & Chunking
 - **Text Parsing:** 
-  - Standard text (`.txt`) and Markdown (`.md`) files are read as raw UTF-8.
-  - Searchable PDFs (`.pdf`) are parsed using `pypdf` to extract raw text blocks page-by-page.
+   - Standard text (`.txt`) and Markdown (`.md`) files are read as raw UTF-8.
+   - Searchable PDFs (`.pdf`) are parsed using `pypdf` to extract raw text blocks page-by-page.
 - **Chunking Strategy:** 
-  - Chunk Size: 1,024 characters (approx.  250–300 tokens). 
-  - Recommended Overlap: 150–200 characters (approx.  15–20%). 
-  - Separators: Maintain the hierarchy ["\n\n", "\n", ". ", " ", ""] to prioritize splitting at paragraphs and sentences before forcing a character count cut. 
+   - Chunk Size: 1,024 characters (approx.   250–300 tokens). 
+   - Recommended Overlap: 150–200 characters (approx.   15–20%). 
+   - Separators: Maintain the hierarchy ["\n\n", "\n", ". ", " ", ""] to prioritize splitting at paragraphs and sentences before forcing a character count cut. 
 - **Metadata Tagging:** Each chunk is tagged with its source file path, name, page number (for PDFs), and hash.
 
 ### 3. Judgment Synthesis (LLM)
@@ -148,19 +148,19 @@ Analyze the provided document context below to answer the user's query.
 INSTRUCTIONS:
 1. Provide at least two distinct, non-identical judgment options or perspectives (e.g. Option A: Conservative, Option B: Progressive).
 2. For each option, specify:
-   - A descriptive Title.
-   - Detailed Reasoning based on the text.
-   - Key Conclusions or actions.
+    - A descriptive Title.
+    - Detailed Reasoning based on the text.
+    - Key Conclusions or actions.
 3. Reference ONLY the provided context. If the context does not contain enough information, explain that.
 4. Format your output strictly in JSON according to this structure:
 {
-  "options": [
-    {
-      "title": "Option Title",
-      "reasoning": "Detailed justification...",
-      "conclusions": ["Conclusion 1", "Conclusion 2"]
-    }
-  ]
+   "options": [
+     {
+       "title": "Option Title",
+       "reasoning": "Detailed justification...",
+       "conclusions": ["Conclusion 1", "Conclusion 2"]
+     }
+   ]
 }
 
 ---
@@ -184,82 +184,82 @@ from pathlib import Path
 from typing import Callable
 
 class IDirectoryWatcher(abc.ABC):
-    @abc.abstractmethod
+     @abc.abstractmethod
     def start(self, directory_path: Path, callback: Callable[[str, Path], None]) -> None:
-        """Starts watching the target directory. Triggers callback on file events.
+         """Starts watching the target directory. Triggers callback on file events.
         
         Args:
             directory_path: The Path of the directory to monitor.
             callback: Function to invoke. Signature: callback(event_type: str, file_path: Path)
                       event_type can be 'created', 'modified', or 'deleted'.
-        """
+         """
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def stop(self) -> None:
-        """Stops watching the directory."""
+         """Stops watching the directory."""
         pass
 ```
 
 ### 2. Document Parser
 ```python
 class IDocumentParser(abc.ABC):
-    @abc.abstractmethod
+     @abc.abstractmethod
     def can_parse(self, filepath: Path) -> bool:
-        """Checks if this parser supports the file extension."""
+         """Checks if this parser supports the file extension."""
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
-        """Extracts text content and metadata from the document.
+         """Extracts text content and metadata from the document.
         
         Returns:
             A list of dicts, each representing a page or section:
-            [{"text": "page/section text", "page_number": 1, ...}]
-        """
+             [{"text": "page/section text", "page_number": 1, ...}]
+         """
         pass
 ```
 
 ### 3. Vector Database / Store
 ```python
 class IVectorStore(abc.ABC):
-    @abc.abstractmethod
+     @abc.abstractmethod
     def initialize(self) -> None:
-        """Sets up database tables and schemas."""
+         """Sets up database tables and schemas."""
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def upsert_document(self, doc: DocumentMetadata, chunks: List[Chunk]) -> None:
-        """Saves or updates document metadata and its associated chunks in a single transaction."""
+         """Saves or updates document metadata and its associated chunks in a single transaction."""
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def delete_document(self, filepath: Path) -> None:
-        """Deletes all records and chunks associated with the file path."""
+         """Deletes all records and chunks associated with the file path."""
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def search_similar_chunks(self, query_vector: np.ndarray, top_k: int) -> List[Chunk]:
-        """Performs cosine similarity search against stored embeddings."""
+         """Performs cosine similarity search against stored embeddings."""
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def get_document_by_path(self, filepath: Path) -> Optional[DocumentMetadata]:
-        """Retrieves document metadata if file is indexed."""
+         """Retrieves document metadata if file is indexed."""
         pass
 ```
 
 ### 4. Synthesis & Inference Engine
 ```python
 class ISynthesisEngine(abc.ABC):
-    @abc.abstractmethod
+     @abc.abstractmethod
     def generate_embedding(self, text: str) -> np.ndarray:
-        """Generates embedding vector for a given text segment using Ollama API."""
+         """Generates embedding vector for a given text segment using Ollama API."""
         pass
 
-    @abc.abstractmethod
+     @abc.abstractmethod
     def synthesize(self, query: str, chunks: List[Chunk]) -> SynthesisResult:
-        """Constructs prompt, requests LLM synthesis from Ollama, and parses the multi-perspective result."""
+         """Constructs prompt, requests LLM synthesis from Ollama, and parses the multi-perspective result."""
         pass
 ```
 
@@ -271,35 +271,43 @@ class ISynthesisEngine(abc.ABC):
 1. **Event Received:** The `DirectoryWatcher` fires an event (e.g., file modified `/Data/Raw/policy.pdf`).
 2. **Readiness Check:** The synchronizer checks file existence and computes the file hash.
 3. **Change Detection:**
-   - Query DB for existing document metadata at this path.
-   - If document exists and file hash matches stored hash, terminate workflow (no-op).
-   - If document exists and hash differs, execute Delete-then-Insert sequence.
-   - If document is new, execute Insert sequence.
+    - Query DB for existing document metadata at this path.
+    - If document exists and file hash matches stored hash, terminate workflow (no-op).
+    - If document exists and hash differs, execute Delete-then-Insert sequence.
+    - If document is new, execute Insert sequence.
 4. **Delete Sequence:**
-   - Execute SQLite query `DELETE FROM documents WHERE filepath = ?` (foreign keys purge chunks cascade).
+    - Execute SQLite query `DELETE FROM documents WHERE filepath = ?` (foreign keys purge chunks cascade).
 5. **Insert Sequence:**
-   - Parse document pages utilizing `IDocumentParser`.
-   - Chunk text into standard dimensions.
-   - Generate embeddings for each chunk via `ISynthesisEngine.generate_embedding()`.
-   - Write new `DocumentMetadata` and `Chunk` records to the SQLite tables inside a transaction block.
+    - Parse document pages utilizing `IDocumentParser`.
+    - Chunk text into standard dimensions.
+    - Generate embeddings for each chunk via `ISynthesisEngine.generate_embedding()`.
+    - Write new `DocumentMetadata` and `Chunk` records to the SQLite tables inside a transaction block.
 
 ### Query & Synthesis Pipeline (TUI Thread)
 1. **Query Entry:** User inputs a query via TUI.
 2. **Embedding:** System triggers `/api/embeddings` to fetch the query vector.
 3. **Vector Search:**
-   - Query all chunks from SQLite.
-   - Calculate cosine similarity in Python using NumPy:
-     $$\text{similarity} = \frac{A \cdot B}{\|A\| \|B\|}$$
-   - Sort chunks and extract the top-K chunks.
+    - Query all chunks from SQLite.
+    - Calculate cosine similarity in Python using NumPy:
+      $$\text{similarity} = \frac{A \cdot B}{\|A\| \|B\|}$$
+    - Sort chunks and extract the top-K chunks.
 4. **LLM Synthesis Request:**
-   - Assemble context block from chunk text content.
-   - Format context and query into prompt.
-   - Call local Ollama chat API.
-   - Extract and validate JSON response.
+    - Assemble context block from chunk text content.
+    - Format context and query into prompt.
+    - Call local Ollama chat API.
+    - Extract and validate JSON response.
 5. **TUI Output Formatting:**
-   - Extract unique document names from chunk metadata.
-   - Display perspectives in user-friendly CLI blocks.
-   - Print clean "References" section at bottom.
+    - Extract unique document names from chunk metadata.
+    - Display perspectives in user-friendly CLI blocks.
+    - Print clean "References" section at bottom.
+
+### 5. LLM Response Parsing & Retry-Fallback Mechanism
+To mitigate LLM output formatting drift and ensure robust JSON extraction, the Synthesis Engine must implement a strict multi-stage parsing pipeline with automatic retries:
+1. **Direct Parse:** Attempt `json.loads()` on the raw response string.
+2. **Markdown Fence Stripping:** If direct parse fails, strip surrounding ````json ... ```` or ```` ... ```` blocks and retry `json.loads()`.
+3. **Regex Extraction:** If stripping fails, use a regex pattern (`r'(\{.*\})'`) to locate the first valid JSON object in the response string and parse it.
+4. **Retry Loop:** If all extraction attempts fail, increment retry counter. Re-submit the request to Ollama with an appended system instruction: `"CRITICAL: Output ONLY raw JSON. Do not include markdown fences, explanations, or trailing text."` Max retries: 2.
+5. **Hard Fallback:** If retries are exhausted, log the raw LLM output at `ERROR` level. Return a `SynthesisResult` with a single fallback option titled `"Parsing Failure"` containing a message: `"The model failed to generate valid structured output. Please try again or check logs."` Do not hallucinate or force partial data into the UI.
 
 ---
 
@@ -323,14 +331,14 @@ The project relies on a lightweight, performant, and 100% offline stack for Appl
 ## Trade-offs & Decisions
 
 1. **SQLite + NumPy vs. ChromaDB/FAISS:**
-   - *Decision:* Build vector search natively using SQLite BLOB storage and NumPy.
-   - *Rationale:* chroma-hnsw and FAISS require binary compilation on Apple Silicon which frequently fails or breaks during env setups. SQLite handles structural metadata and transactions flawlessly. NumPy handles cosine similarity across thousands of vectors in under 10ms, eliminating the need for standalone vector database processes.
+    - *Decision:* Build vector search natively using SQLite BLOB storage and NumPy.
+    - *Rationale:* chroma-hnsw and FAISS require binary compilation on Apple Silicon which frequently fails or breaks during env setups. SQLite handles structural metadata and transactions flawlessly. NumPy handles cosine similarity across thousands of vectors in under 10ms, eliminating the need for standalone vector database processes.
 2. **Local Ollama vs. Local Transformers/Llama.cpp Python Bindings:**
-   - *Decision:* Call a running Ollama daemon via local HTTP APIs.
-   - *Rationale:* Setting up metal-accelerated llama-cpp-python can be highly platform-dependent and brittle to compile. Ollama natively leverages Apple Silicon GPU (Metal) or Nvidia GPU, providing a robust background model manager that is simple to run offline.
+    - *Decision:* Call a running Ollama daemon via local HTTP APIs.
+    - *Rationale:* Setting up metal-accelerated llama-cpp-python can be highly platform-dependent and brittle to compile. Ollama natively leverages Apple Silicon GPU (Metal) or Nvidia GPU, providing a robust background model manager that is simple to run offline.
 3. **Ollama Embeddings vs. SentenceTransformers:**
-   - *Decision:* Use Ollama's embedding API.
-   - *Rationale:* Keeps model execution unified within Ollama's runtime environment, avoiding additional RAM usage from running separate Python PyTorch models concurrently.
+    - *Decision:* Use Ollama's embedding API.
+    - *Rationale:* Keeps model execution unified within Ollama's runtime environment, avoiding additional RAM usage from running separate Python PyTorch models concurrently.
 
 ---
 

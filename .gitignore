@@ -1,0 +1,53 @@
+# JWRAG Specific & Raw Data
+Data/
+data/
+docs_raw/
+test_docs/
+jwrag_index.db
+jwrag_index.db-*
+*.sqlite3
+
+# Python Environment
+.venv/
+venv/
+env/
+ENV/
+*.env
+.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# Testing / Profiling
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+
+# IDE / AI Assistants / OS
+.aider*
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*~

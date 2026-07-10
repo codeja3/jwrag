@@ -4,11 +4,11 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 **Crucial Reminder**: Strict Test-Driven Development (TDD) is enforced. For every task, xUnit-style tests must be written and failing (RED) *before* any implementation logic is authored.
 
 ## Phase 1: Project Setup & Infrastructure
-- [ ] Initialize Python project using `uv` (no conda/docker).
-- [ ] Create `pyproject.toml`.
-- [ ] Add runtime dependencies: `watchdog`, `pypdf`, `httpx`, `loguru`, `numpy`.
-- [ ] Add dev dependencies: `pytest`, `pytest-mock`.
-- [ ] Create `conftest.py` for shared `pytest` fixtures.
+- [x] Initialize Python project using `uv` (no conda/docker).
+- [x] Create `pyproject.toml`.
+- [x] Add runtime dependencies: `watchdog`, `pypdf`, `httpx`, `loguru`, `numpy`.
+- [x] Add dev dependencies: `pytest`, `pytest-mock`.
+- [x] Create `conftest.py` for shared `pytest` fixtures.
 
 ## Phase 2: Core Data Structures & Database
 - [ ] **DTOs**: Define immutable `dataclasses` (`DocumentMetadata`, `Chunk`, `SynthesisOption`, `SynthesisResult`).

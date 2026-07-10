@@ -11,25 +11,25 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 - **`TODO.md`**: The complete task breakdown and discrete execution steps.
 
 ### 3. Project Guardrails & Architectural Constraints
-*   **100% Offline / Air-Gapped**: Zero external network calls. All data, embeddings, and LLM inferences remain local.
-*   **Tech Stack**: Python 3.12+, `uv` (package manager), SQLite + NumPy (for vector storage/search), `pypdf`, `watchdog`, and local Ollama (`qwen3-embedding:4b` / `gemma4:26b-mlx`). 
-*   **Prohibited Tech**: Monolithic environments (Conda/Docker), complex vector databases (ChromaDB/FAISS), and cloud APIs.
-*   **Strict Methodologies**: 
-    *   **TDD First**: RED-GREEN-Refactor. Tests strictly dictate implementation. No code without a failing test first.
-    *   **Spec-Driven**: `SPEC.md` is the immutable source of truth.
-*   **Non-Goals (Out of Scope)**: Cloud integrations, multi-user/RBAC, and OCR for image-based PDFs.
+*    **100% Offline / Air-Gapped**: Zero external network calls. All data, embeddings, and LLM inferences remain local.
+*    **Tech Stack**: Python 3.12+, `uv` (package manager), SQLite + NumPy (for vector storage/search), `pypdf`, `watchdog`, and local Ollama (`qwen3-embedding:4b` / `gemma4:26b-mlx`). 
+*    **Prohibited Tech**: Monolithic environments (Conda/Docker), complex vector databases (ChromaDB/FAISS), and cloud APIs.
+*    **Strict Methodologies**: 
+     *    **TDD First**: RED-GREEN-Refactor. Tests strictly dictate implementation. No code without a failing test first.
+     *    **Spec-Driven**: `SPEC.md` is the immutable source of truth.
+*    **Non-Goals (Out of Scope)**: Cloud integrations, multi-user/RBAC, and OCR for image-based PDFs.
 
 ### 4. Running Checklist & Active Task Tracker
-*Current Status: Not Started.*
+*Current Status: Phase 1 Complete. Proceeding to Phase 2.*
 
-*   [ ] **Phase 1: Project Setup**: `uv` init, `pyproject.toml`, and dependencies installation (`watchdog`, `pypdf`, `httpx`, `pytest`).
-*   [ ] **Phase 2: Database & Core DTOs (TDD)**: Implement `dataclasses` and `SQLiteVectorStore`.
-*   [ ] **Phase 3: Parsing & Chunking (TDD)**: Build `IDocumentParser` for text/markdown/pdf and text chunker.
-*   [ ] **Phase 4: Synthesis Engine (TDD)**: Build local Ollama API wrappers for embeddings and LLM multi-perspective synthesis with strict JSON parsing.
-*   [ ] **Phase 5: Directory Sync (TDD)**: Build `watchdog` integration and `IndexSyncManager`.
-*   [ ] **Phase 6: Terminal UI (TUI)**: Build and integrate the CLI interface.
+*    [x] **Phase 1: Project Setup**: `uv` init, `pyproject.toml`, and dependencies installation (`watchdog`, `pypdf`, `httpx`, `pytest`).
+*    [ ] **Phase 2: Database & Core DTOs (TDD)**: Implement `dataclasses` and `SQLiteVectorStore`.
+*    [ ] **Phase 3: Parsing & Chunking (TDD)**: Build `IDocumentParser` for text/markdown/pdf and text chunker.
+*    [ ] **Phase 4: Synthesis Engine (TDD)**: Build local Ollama API wrappers for embeddings and LLM multi-perspective synthesis with strict JSON parsing.
+*    [ ] **Phase 5: Directory Sync (TDD)**: Build `watchdog` integration and `IndexSyncManager`.
+*    [ ] **Phase 6: Terminal UI (TUI)**: Build and integrate the CLI interface.
 
 ### 5. Persistent Scratchpad / Error Log
 *(Use this space to track active blockages, temporary configurations, or recurring errors across sessions)*
 
-*   *No active errors or scratchpad notes.*
+*    *No active errors or scratchpad notes.*

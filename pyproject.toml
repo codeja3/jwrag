@@ -1,0 +1,18 @@
+[project]
+name = "jwrag"
+version = "0.1.0"
+description = "JWRAG: Judgment-Weighted Retrieval-Augmented Generation"
+requires-python = ">=3.12"
+dependencies = [
+    "watchdog",
+    "pypdf",
+    "httpx",
+    "loguru",
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+]

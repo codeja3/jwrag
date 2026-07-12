@@ -1,7 +1,7 @@
 # JWRAG Project TODO List
 
 This `TODO.md` defines the execution plan for the JWRAG system. 
-**Crucial Reminder**: Strict Test-Driven Development (TDD) is enforced. For every task, xUnit-style tests must be written and failing (RED) *before* any implementation logic is authored.
+**Crucial Reminder**: Strict Test-Driven Development (TDD) is enforced. For every task, xUnit-style tests must be written and executed *before* any core implementation logic is authored.
 
 ## Phase 1: Project Setup & Infrastructure
 - [x] Initialize Python project using `uv` (no conda/docker).
@@ -11,10 +11,10 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] Create `conftest.py` for shared `pytest` fixtures.
 
 ## Phase 2: Core Data Structures & Database
-- [ ] **DTOs**: Define immutable `dataclasses` (`DocumentMetadata`, `Chunk`, `SynthesisOption`, `SynthesisResult`).
-- [ ] **Interface**: Define `IVectorStore` abstract base class.
-- [ ] **Test**: Write tests for SQLite initialization, upserting documents, deleting documents, and retrieval.
-- [ ] **Implement**: Build `SQLiteVectorStore` (tables: `documents`, `document_chunks`) storing vectors as BLOBs.
+- [x] **DTOs**: Define immutable `dataclasses` (`DocumentMetadata`, `Chunk`, `SynthesisOption`, `SynthesisResult`).
+- [x] **Interface**: Define `IVectorStore` abstract base class.
+- [x] **Test**: Write tests for SQLite initialization, upserting documents, deleting documents, and retrieval.
+- [x] **Implement**: Build `SQLiteVectorStore` (tables: `documents`, `document_chunks`) storing vectors as BLOBs.
 
 ## Phase 3: Document Parsing & Chunking
 - [ ] **Interface**: Define `IDocumentParser` abstract base class.

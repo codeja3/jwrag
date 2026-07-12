@@ -1,0 +1,84 @@
+from pathlib import Path
+from typing import List, Dict, Any
+import pypdf
+from loguru import logger
+from jwrag.interfaces import IDocumentParser
+
+
+class TextMarkdownParser(IDocumentParser):
+    """Parser for standard text (.txt) and Markdown (.md) files."""
+
+    SUPPORTED_EXTENSIONS = {".txt", ".md"}
+
+    def can_parse(self, filepath: Path) -> bool:
+        """Checks if the file extension is supported.
+        
+        Args:
+            filepath: The path to the file to check.
+            
+        Returns:
+            True if the file extension matches supported types, False otherwise.
+        """
+        return filepath.suffix.lower() in self.SUPPORTED_EXTENSIONS
+
+    def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
+        """Extracts raw text from a text or markdown file.
+        
+        Args:
+            filepath: The path to the file to parse.
+            
+        Returns:
+            A list containing a single dict with the extracted text and page_number 1.
+        """
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                text = f.read()
+            logger.info(f"Successfully parsed text/markdown file: {filepath}")
+            return [{"text": text, "page_number": 1}]
+        except Exception as e:
+            logger.error(f"Failed to parse text/markdown file {filepath}: {e}")
+            raise
+
+
+class PdfParser(IDocumentParser):
+    """Parser for searchable PDF files using pypdf."""
+
+    SUPPORTED_EXTENSIONS = {".pdf"}
+
+    def can_parse(self, filepath: Path) -> bool:
+        """Checks if the file extension is supported.
+        
+        Args:
+            filepath: The path to the file to check.
+            
+        Returns:
+            True if the file extension matches supported types, False otherwise.
+        """
+        return filepath.suffix.lower() in self.SUPPORTED_EXTENSIONS
+
+    def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
+        """Extracts text content page-by-page from a PDF.
+        
+        Args:
+            filepath: The path to the PDF file to parse.
+            
+        Returns:
+            A list of dicts, each containing 'text' and 'page_number'.
+        """
+        extracted_pages = []
+        try:
+            with open(filepath, "rb") as f:
+                reader = pypdf.PdfReader(f)
+                for page_num in range(len(reader.pages)):
+                    page_text = reader.pages[page_num].extract_text() or ""
+                    if page_text.strip():
+                        extracted_pages.append({
+                            "text": page_text,
+                            "page_number": page_num + 1
+                        })
+            logger.info(f"Successfully parsed PDF file: {filepath} ({len(extracted_pages)} pages)")
+        except Exception as e:
+            logger.error(f"Failed to parse PDF file {filepath}: {e}")
+            raise
+            
+        return extracted_pages

@@ -17,13 +17,13 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Implement**: Build `SQLiteVectorStore` (tables: `documents`, `document_chunks`) storing vectors as BLOBs.
 
 ## Phase 3: Document Parsing & Chunking
-- [ ] **Interface**: Define `IDocumentParser` abstract base class.
-- [ ] **Test**: Write tests for Text/Markdown parsing.
-- [ ] **Implement**: Build Text/Markdown parser.
-- [ ] **Test**: Write tests for searchable PDF parsing (using `pypdf`).
-- [ ] **Implement**: Build PDF parser.
-- [ ] **Test**: Write tests for chunking logic (1024 char size, 150-200 char overlap, hierarchical separators).
-- [ ] **Implement**: Build text chunker.
+- [x] **Interface**: Define `IDocumentParser` abstract base class.
+- [x] **Test**: Write tests for Text/Markdown parsing.
+- [x] **Implement**: Build Text/Markdown parser.
+- [x] **Test**: Write tests for searchable PDF parsing (using `pypdf`).
+- [x] **Implement**: Build PDF parser.
+- [x] **Test**: Write tests for chunking logic (1024 char size, 150-200 char overlap, hierarchical separators).
+- [x] **Implement**: Build text chunker.
 
 ## Phase 4: Embedding & Synthesis Engine
 - [ ] **Interface**: Define `ISynthesisEngine` abstract base class.

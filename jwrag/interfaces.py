@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Dict, Any, Optional
 import numpy as np
 from jwrag.models import DocumentMetadata, Chunk
 
@@ -29,4 +29,39 @@ class IVectorStore(abc.ABC):
     @abc.abstractmethod
     def get_document_by_path(self, filepath: Path) -> Optional[DocumentMetadata]:
         """Retrieves document metadata if file is indexed."""
+        pass
+
+
+class IDirectoryWatcher(abc.ABC):
+    @abc.abstractmethod
+    def start(self, directory_path: Path, callback: Callable[[str, Path], None]) -> None:
+        """Starts watching the target directory. Triggers callback on file events.
+        
+        Args:
+            directory_path: The Path of the directory to monitor.
+            callback: Function to invoke. Signature: callback(event_type: str, file_path: Path)
+                      event_type can be 'created', 'modified', or 'deleted'.
+          """
+        pass
+
+    @abc.abstractmethod
+    def stop(self) -> None:
+        """Stops watching the directory."""
+        pass
+
+
+class IDocumentParser(abc.ABC):
+    @abc.abstractmethod
+    def can_parse(self, filepath: Path) -> bool:
+        """Checks if this parser supports the file extension."""
+        pass
+
+    @abc.abstractmethod
+    def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
+        """Extracts text content and metadata from the document.
+        
+        Returns:
+            A list of dicts, each representing a page or section:
+              [{"text": "page/section text", "page_number": 1, ...}]
+          """
         pass

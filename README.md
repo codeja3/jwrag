@@ -86,12 +86,17 @@ Before running JWRAG, ensure your environment meets the following requirements:
      ```bash
     uv sync
      ```
-3. **Verify Ollama connectivity:**
-   Ensure your local Ollama server is running and accessible at `http://localhost:11434`.
+3. **Download required models for Ollama:**
+   Ensure your local Ollama server is running, then pull the necessary models:
+     ```bash
+    ollama pull qwen3-embedding:4b
+    ollama pull gemma4:26b-mlx
+     ```
 4. **Run the application:**
      ```bash
     uv run python -m jwrag.main
      ```
+   *(Note: The `./documents` directory will be created automatically upon first run. Place your `.txt`, `.md`, or `.pdf` files in this directory to have them indexed).*
 
 ---
 

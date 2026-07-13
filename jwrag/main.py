@@ -102,6 +102,9 @@ class JWRAGApp:
 def run() -> None:
     db_path = Path("jwrag_index.db")
     doc_dir = Path("./documents")
+    
+    # Auto-create the documents directory to prevent watchdog crashes
+    doc_dir.mkdir(parents=True, exist_ok=True)
 
     app = JWRAGApp(db_path, doc_dir)
     print("JWRAG Ready. Type 'exit' to quit.")

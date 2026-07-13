@@ -10,11 +10,11 @@ A 100% localized, air-gapped decision support system that watches a local direct
 - [Prerequisites](#prerequisites)
 - [Installation & Setup](#installation--setup)
 - [Detailed Manual](#detailed-manual)
-   - [1. Directory Synchronization Pipeline](#1-directory-synchronization-pipeline)
-   - [2. Interactive Querying (TUI)](#2-interactive-querying-tui)
-   - [3. Synthesis Engine Behavior](#3-synthesis-engine-behavior)
-   - [4. Data Privacy & Air-Gapped Execution](#4-data-privacy--air-gapped-execution)
-   - [5. Configuration & Customization](#5-configuration--customization)
+    - [1. Directory Synchronization Pipeline](#1-directory-synchronization-pipeline)
+    - [2. Interactive Querying (TUI)](#2-interactive-querying-tui)
+    - [3. Synthesis Engine Behavior](#3-synthesis-engine-behavior)
+    - [4. Data Privacy & Air-Gapped Execution](#4-data-privacy--air-gapped-execution)
+    - [5. Configuration & Customization](#5-configuration--customization)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
@@ -32,7 +32,35 @@ JWRAG is designed for professionals managing highly sensitive, proprietary data 
 ---
 
 ## Architecture & Core Principles
-JWRAG follows a modular, spec-driven architecture built on strict TDD and SDD methodologies:
+JWRAG follows a modular, spec-driven architecture built on strict TDD and SDD methodologies. The system is divided into two primary pipelines: the **Directory Synchronization Pipeline** for automated indexing and the **Retrieval & Synthesis Pipeline** for interactive querying.
+
+```mermaid
+graph TD
+    subgraph Synchronizer [Directory Synchronization Pipeline]
+        Watch[Directory Watcher: watchdog] -->|FileSystem Events| SyncMgr[Index Sync Manager]
+        SyncMgr -->|Check Hash & Timestamp| DBCheck{Is File Changed?}
+        DBCheck -->|Yes| Parse[Document Parser: pypdf/txt/md]
+        DBCheck -->|No / Skip| Idle[Idle / Log]
+        Parse -->|Text Chunks| Chunk[Chunker]
+        Chunk -->|Text Segments| Embed[Embedding Client: Ollama API]
+        Embed -->|Dense Vectors| SQLite[(SQLite Database: jwrag_index.db)]
+        SyncMgr -->|Deleted Event| Purge[Purge Vectors & Metadata]
+        Purge --> SQLite
+    end
+
+    subgraph QueryEngine [Retrieval & Synthesis Pipeline]
+        TUI[Terminal User Interface] -->|Query String| QueryEmbed[Query Embedder]
+        QueryEmbed -->|Query Vector| Search[Vector Searcher: NumPy Cosine Sim]
+        Search -->|Fetch Top-K Context + Metadata| SQLite
+        Search -->|Aggregated Chunks| Synthesizer[Synthesis Engine]
+        Synthesizer -->|Prompt Construction| OllamaClient[Ollama Client]
+        OllamaClient -->|Local API Requests| LocalOllama[Local Ollama LLM: Gemma4 or similar]
+        LocalOllama -->|Structured Response| Synthesizer
+        Synthesizer -->|Validate & Format Perspectives| TUI
+    end
+```
+
+Key architectural components include:
 - **Directory Watcher:** Uses `watchdog` to monitor a target folder for file events (`created`, `modified`, `deleted`).
 - **Sync Manager:** Computes file hashes to detect changes, triggering upsert or delete sequences in the SQLite database.
 - **Document Parser:** Extracts text from `.txt`, `.md`, and searchable `.pdf` files using `pypdf`.
@@ -55,15 +83,15 @@ Before running JWRAG, ensure your environment meets the following requirements:
 ## Installation & Setup
 1. **Clone or extract the project repository.**
 2. **Install dependencies using `uv`:**
-    ```bash
+     ```bash
     uv sync
-    ```
+     ```
 3. **Verify Ollama connectivity:**
    Ensure your local Ollama server is running and accessible at `http://localhost:11434`.
 4. **Run the application:**
-    ```bash
+     ```bash
     uv run python -m jwrag.main
-    ```
+     ```
 
 ---
 
@@ -86,9 +114,9 @@ Update this path to point to your local repository of sensitive documents. The `
 Once the application starts, you will be presented with a terminal prompt (`> `). 
 - **Enter a query:** Type your question and press `Enter`. The system will embed the query, retrieve top-K similar chunks, and request multi-perspective synthesis from the local LLM.
 - **View Output:** Results are displayed in structured blocks:
-   - `--- Query ---`
-   - `--- Options ---` (Multiple distinct judgment perspectives)
-   - `--- References ---` (Source filenames)
+    - `--- Query ---`
+    - `--- Options ---` (Multiple distinct judgment perspectives)
+    - `--- References ---` (Source filenames)
 - **Exit:** Type `exit` or `quit` to gracefully terminate the application and stop the directory watcher.
 
 The `TUIRenderer` class formats these outputs, ensuring clean separation between query context, synthesized options, and source references.

@@ -2,7 +2,7 @@ import abc
 from pathlib import Path
 from typing import Callable, List, Dict, Any, Optional
 import numpy as np
-from jwrag.models import DocumentMetadata, Chunk
+from jwrag.models import DocumentMetadata, Chunk, SynthesisResult
 
 
 class IVectorStore(abc.ABC):

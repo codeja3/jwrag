@@ -48,3 +48,8 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Integrate**: Connect TUI with `ISynthesisEngine` and `IVectorStore`.
 - [x] **Integrate**: Run `DirectoryWatcher` alongside the TUI.
 - [x] **Audit**: Verify zero data egress (air-gapped execution) and correct file citations.
+
+## Phase 7: Final Pipeline Integration
+- [x] **Test**: Write `test_main.py` for integration testing.
+- [x] **Implement**: Connect the full parsing and embedding pipeline in `sync_callback` inside `main.py`.
+- [x] **Implement**: Complete the execution pipeline in `process_query` inside `main.py`.

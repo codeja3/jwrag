@@ -26,14 +26,14 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Implement**: Build text chunker.
 
 ## Phase 4: Embedding & Synthesis Engine
-- [ ] **Interface**: Define `ISynthesisEngine` abstract base class.
-- [ ] **Test**: Write tests for Ollama embedding client (mocking HTTP requests).
-- [ ] **Implement**: Build Ollama embedding client targeting `/api/embeddings` (using `qwen3-embedding:4b` or `bge-me:latest`).
-- [ ] **Test**: Write tests for NumPy-based Cosine Similarity vector search.
-- [ ] **Implement**: Add vector search logic to `SQLiteVectorStore`.
-- [ ] **Test**: Write tests for the LLM synthesis pipeline (mocking Ollama JSON responses and malformed responses).
-- [ ] **Implement**: Build LLM prompt construction and query execution (targeting `gemma4:26b-mlx`).
-- [ ] **Implement**: Build robust JSON parsing pipeline (Direct Parse -> Markdown Stripping -> Regex -> Retry Loop -> Hard Fallback).
+- [x] **Interface**: Define `ISynthesisEngine` abstract base class.
+- [x] **Test**: Write tests for Ollama embedding client (mocking HTTP requests).
+- [x] **Implement**: Build Ollama embedding client targeting `/api/embeddings` (using `qwen3-embedding:4b` or `bge-me:latest`).
+- [x] **Test**: Write tests for NumPy-based Cosine Similarity vector search.
+- [x] **Implement**: Add vector search logic to `SQLiteVectorStore`.
+- [x] **Test**: Write tests for the LLM synthesis pipeline (mocking Ollama JSON responses and malformed responses).
+- [x] **Implement**: Build LLM prompt construction and query execution (targeting `gemma4:26b-mlx`).
+- [x] **Implement**: Build robust JSON parsing pipeline (Direct Parse -> Markdown Stripping -> Regex -> Retry Loop -> Hard Fallback).
 
 ## Phase 5: Directory Synchronization Pipeline
 - [ ] **Interface**: Define `IDirectoryWatcher` abstract base class.

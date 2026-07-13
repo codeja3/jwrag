@@ -10,10 +10,11 @@ A 100% localized, air-gapped decision support system that watches a local direct
 - [Prerequisites](#prerequisites)
 - [Installation & Setup](#installation--setup)
 - [Detailed Manual](#detailed-manual)
-  - [1. Directory Synchronization](#1-directory-synchronization)
-  - [2. Interactive Querying (TUI)](#2-interactive-querying-tui)
-  - [3. Synthesis Engine Behavior](#3-synthesis-engine-behavior)
-  - [4. Data Privacy & Air-Gapped Execution](#4-data-privacy--air-gapped-execution)
+   - [1. Directory Synchronization Pipeline](#1-directory-synchronization-pipeline)
+   - [2. Interactive Querying (TUI)](#2-interactive-querying-tui)
+   - [3. Synthesis Engine Behavior](#3-synthesis-engine-behavior)
+   - [4. Data Privacy & Air-Gapped Execution](#4-data-privacy--air-gapped-execution)
+   - [5. Configuration & Customization](#5-configuration--customization)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
@@ -54,21 +55,21 @@ Before running JWRAG, ensure your environment meets the following requirements:
 ## Installation & Setup
 1. **Clone or extract the project repository.**
 2. **Install dependencies using `uv`:**
-   ```bash
-   uv sync
-   ```
+    ```bash
+    uv sync
+    ```
 3. **Verify Ollama connectivity:**
    Ensure your local Ollama server is running and accessible at `http://localhost:11434`.
 4. **Run the application:**
-   ```bash
-   uv run python -m jwrag.main
-   ```
+    ```bash
+    uv run python -m jwrag.main
+    ```
 
 ---
 
 ## Detailed Manual
 
-### 1. Directory Synchronization
+### 1. Directory Synchronization Pipeline
 JWRAG continuously monitors a designated document directory for file system events. The synchronization pipeline operates as follows:
 - **New Files:** Automatically parsed, chunked, embedded, and indexed into the SQLite database.
 - **Modified Files:** Hash comparison detects changes. Old vectors are purged, and new embeddings are generated and upserted.
@@ -79,16 +80,18 @@ The watched directory is defined in `jwrag/main.py` under the `run()` function:
 ```python
 doc_dir = Path("./documents")
 ```
-Update this path to point to your local repository of sensitive documents.
+Update this path to point to your local repository of sensitive documents. The `IndexSyncManager` class handles hash computation and state tracking, while `DirectoryWatcher` bridges OS-level events to the application logic.
 
 ### 2. Interactive Querying (TUI)
 Once the application starts, you will be presented with a terminal prompt (`> `). 
 - **Enter a query:** Type your question and press `Enter`. The system will embed the query, retrieve top-K similar chunks, and request multi-perspective synthesis from the local LLM.
 - **View Output:** Results are displayed in structured blocks:
-  - `--- Query ---`
-  - `--- Options ---` (Multiple distinct judgment perspectives)
-  - `--- References ---` (Source filenames)
+   - `--- Query ---`
+   - `--- Options ---` (Multiple distinct judgment perspectives)
+   - `--- References ---` (Source filenames)
 - **Exit:** Type `exit` or `quit` to gracefully terminate the application and stop the directory watcher.
+
+The `TUIRenderer` class formats these outputs, ensuring clean separation between query context, synthesized options, and source references.
 
 ### 3. Synthesis Engine Behavior
 The core value of JWRAG lies in its "Exercise Judgment" engine. Instead of returning a single factual answer, the LLM is prompted to:
@@ -97,13 +100,24 @@ The core value of JWRAG lies in its "Exercise Judgment" engine. Instead of retur
 3. Provide detailed reasoning and key conclusions for each option.
 4. Strictly reference only the provided context.
 
-The engine includes a robust JSON parsing pipeline with automatic retries to handle LLM output formatting drift, ensuring reliable structured responses even when the model deviates from expected markdown fences.
+The engine includes a robust JSON parsing pipeline with automatic retries to handle LLM output formatting drift, ensuring reliable structured responses even when the model deviates from expected markdown fences. If parsing fails after 2 retries, a hard fallback returns a "Parsing Failure" option.
 
 ### 4. Data Privacy & Air-Gapped Execution
 JWRAG is engineered for absolute privacy:
 - **Zero Egress:** All embeddings, vector storage, and LLM inference occur locally via `http://localhost:11434`. No external APIs or cloud services are contacted.
 - **Local SQLite Index:** Metadata and BLOB embeddings are stored in a single local database (`jwrag_index.db`).
 - **Defensive Parsing:** The system gracefully handles missing files, corrupted PDFs, and malformed LLM responses without crashing or leaking data.
+
+### 5. Configuration & Customization
+You can customize the Ollama models and base URL by modifying the `OllamaSynthesisEngine` initialization in `jwrag/main.py`:
+```python
+self.engine = OllamaSynthesisEngine(
+    base_url="http://localhost:11434",
+    embedding_model="qwen3-embedding:4b",
+    synthesis_model="gemma4:26b-mlx"
+)
+```
+Adjust these parameters to match your local Ollama environment and available models.
 
 ---
 

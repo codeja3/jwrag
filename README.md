@@ -165,4 +165,4 @@ Adjust these parameters to match your local Ollama environment and available mod
 ---
 
 ## License
-This project is provided as-is for internal, air-gapped decision support. All development adheres to strict TDD/SDD contracts and local execution mandates. No external dependencies or cloud integrations are permitted.
+This project is licensed under the GNU General Public License v3.0 (GPLv3). See the `LICENSE` file for details.

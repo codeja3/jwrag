@@ -1,4 +1,5 @@
 import sqlite3
+import threading
 from pathlib import Path
 from typing import List, Optional
 import json
@@ -13,14 +14,14 @@ class SQLiteVectorStore(IVectorStore):
 
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
-        self.conn: Optional[sqlite3.Connection] = None
+        self._local = threading.local()
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Retrieves or initializes a database connection."""
-        if self.conn is None:
-            self.conn = sqlite3.connect(self.db_path)
-            self.conn.row_factory = sqlite3.Row
-        return self.conn
+        """Retrieves or initializes a database connection for the current thread."""
+        if not hasattr(self._local, "conn"):
+            self._local.conn = sqlite3.connect(self.db_path)
+            self._local.conn.row_factory = sqlite3.Row
+        return self._local.conn
 
     def initialize(self) -> None:
         """Creates the documents and document_chunks tables with required indexes."""

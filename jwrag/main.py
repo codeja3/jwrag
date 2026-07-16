@@ -111,6 +111,8 @@ def run() -> None:
     try:
         while True:
             query = input("\n> ")
+            if not query.strip():
+                continue
             if query.strip().lower() in ("exit", "quit"):
                 break
             result = app.process_query(query)

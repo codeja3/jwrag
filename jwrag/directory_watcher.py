@@ -58,7 +58,7 @@ class DirectoryWatcher:
 
     def stop(self) -> None:
         """Stops watching the directory."""
-        if self._observer.is_running():
+        if self._observer.is_alive():
             self._observer.stop()
             self._observer.join()
             logger.info("Stopped watching directory.")

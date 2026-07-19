@@ -21,7 +21,7 @@ A 100% localized, air-gapped decision support system that watches a local direct
 ---
 
 ## Overview
-JWRAG is designed for professionals managing highly sensitive, proprietary data who require private, offline decision-making support. It eliminates cloud-based RAG risks by running entirely on local hardware, leveraging a local Ollama server for embeddings and LLM inference, and maintaining a strict SQLite vector index.
+JWRAG is designed for professionals managing highly sensitive, proprietary data who require private decision-making support. It mitigates traditional RAG risks by either running entirely on local hardware (leveraging local Ollama models) or by utilizing frontier cloud models (e.g., OpenAI) behind a strict Local Data Sanitization pipeline that scrubs all Personal Identifiable Information (PII) before it leaves the machine.
 
 **Key Capabilities:**
 - Real-time document monitoring and automatic re-indexing.
@@ -66,7 +66,8 @@ Key architectural components include:
 - **Document Parser:** Extracts text from `.txt`, `.md`, and searchable `.pdf` files using `pypdf`.
 - **Chunker:** Splits extracted text into 1024-character segments with 150-200 character overlap, preserving hierarchical separators.
 - **Vector Store:** Stores document metadata and embedding BLOBs in SQLite, performing cosine similarity search natively via `numpy`.
-- **Synthesis Engine:** Queries a local Ollama model (`gemma4:26b-mlx` or similar) to generate structured JSON containing multiple judgment perspectives.
+- **Data Sanitizer (New in Phase 8):** Uses `presidio-analyzer` to intercept and scrub PII from document chunks and queries when operating in Cloud mode.
+- **Synthesis Engines (Strategy Pattern):** Routes queries through either `OllamaSynthesisEngine` (local, air-gapped) or `CloudSynthesisEngine` (cloud API with sanitization) to generate structured JSON containing multiple judgment perspectives.
 - **TUI Renderer:** Formats query inputs, synthesized options, and references into a clean terminal interface.
 
 ---
@@ -135,10 +136,11 @@ The core value of JWRAG lies in its "Exercise Judgment" engine. Instead of retur
 
 The engine includes a robust JSON parsing pipeline with automatic retries to handle LLM output formatting drift, ensuring reliable structured responses even when the model deviates from expected markdown fences. If parsing fails after 2 retries, a hard fallback returns a "Parsing Failure" option.
 
-### 4. Data Privacy & Air-Gapped Execution
-JWRAG is engineered for absolute privacy:
-- **Zero Egress:** All embeddings, vector storage, and LLM inference occur locally via `http://localhost:11434`. No external APIs or cloud services are contacted.
-- **Local SQLite Index:** Metadata and BLOB embeddings are stored in a single local database (`jwrag_index.db`).
+### 4. Data Privacy & Execution Modes
+JWRAG is engineered for absolute privacy with two distinct operating modes:
+- **Local Mode (Air-Gapped & Zero Egress):** All embeddings, vector storage, and LLM inference occur locally via `http://localhost:11434`. No external APIs or cloud services are contacted.
+- **Cloud Mode (Local PII Sanitization):** When leveraging frontier models (e.g., OpenAI API), all text is intercepted by a local `DataSanitizer` (powered by Microsoft Presidio and SpaCy). Sensitive entities (Names, Emails, Phone Numbers) are scrubbed and replaced with placeholders (e.g., `<PERSON_1>`) *before* being transmitted to the cloud. The system automatically de-anonymizes the returning AI synthesis, guaranteeing PII never leaves your machine.
+- **Local SQLite Index:** Regardless of the mode, all metadata and BLOB embeddings are stored in a single local database (`jwrag_index.db`).
 - **Defensive Parsing:** The system gracefully handles missing files, corrupted PDFs, and malformed LLM responses without crashing or leaking data.
 
 ### 5. Configuration & Customization

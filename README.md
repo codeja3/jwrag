@@ -42,7 +42,7 @@ graph TD
         DBCheck -->|Yes| Parse[Document Parser: pypdf/txt/md]
         DBCheck -->|No / Skip| Idle[Idle / Log]
         Parse -->|Text Chunks| Chunk[Chunker]
-        Chunk -->|Text Segments| Embed[Embedding Client: Ollama API]
+        Chunk -->|Text Segments| Embed[Embedding Engine: Local/Cloud]
         Embed -->|Dense Vectors| SQLite[(SQLite Database: jwrag_index.db)]
         SyncMgr -->|Deleted Event| Purge[Purge Vectors & Metadata]
         Purge --> SQLite
@@ -53,9 +53,17 @@ graph TD
         QueryEmbed -->|Query Vector| Search[Vector Searcher: NumPy Cosine Sim]
         Search -->|Fetch Top-K Context + Metadata| SQLite
         Search -->|Aggregated Chunks| Synthesizer[Synthesis Engine]
-        Synthesizer -->|Prompt Construction| OllamaClient[Ollama Client]
-        OllamaClient -->|Local API Requests| LocalOllama[Local Ollama LLM: Gemma4 or similar]
-        LocalOllama -->|Structured Response| Synthesizer
+        Synthesizer -->|Prompt Construction| ConfigRouter{Engine Type?}
+        
+        ConfigRouter -->|Local Mode| LocalOllama[Local Ollama Client]
+        LocalOllama -->|Local API Requests| LocalLLM[Gemma4/Local LLM]
+        LocalLLM -->|Structured Response| Synthesizer
+        
+        ConfigRouter -->|Cloud Mode| Sanitizer[Data Sanitizer: Presidio]
+        Sanitizer -->|Scrubbed Text| CloudAPI[Cloud API: OpenAI]
+        CloudAPI -->|Anonymized JSON| Sanitizer
+        Sanitizer -->|De-anonymized JSON| Synthesizer
+
         Synthesizer -->|Validate & Format Perspectives| TUI
     end
 ```

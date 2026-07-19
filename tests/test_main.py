@@ -14,6 +14,10 @@ def mock_app(mocker):
     mocker.patch("jwrag.main.DirectoryWatcher")
     mocker.patch("jwrag.main.TUIRenderer")
     
+    mock_config = MagicMock()
+    mock_config.engine_type = "local"
+    mocker.patch("jwrag.main.load_config", return_value=mock_config)
+    
     app = JWRAGApp(Path("dummy_db.db"), Path("dummy_dir"))
     return app
 

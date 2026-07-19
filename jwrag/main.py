@@ -9,6 +9,8 @@ from jwrag.cli import TUIRenderer
 from jwrag.parsers import TextMarkdownParser, PdfParser
 from jwrag.chunker import TextChunker
 from jwrag.models import DocumentMetadata, Chunk, SynthesisResult
+from jwrag.config import load_config
+from jwrag.cloud_client import CloudSynthesisEngine
 from loguru import logger
 
 
@@ -16,7 +18,22 @@ class JWRAGApp:
     def __init__(self, db_path: Path, doc_dir: Path) -> None:
         self.store = SQLiteVectorStore(db_path)
         self.store.initialize()
-        self.engine = OllamaSynthesisEngine()
+        
+        config = load_config()
+        if config.engine_type == "cloud":
+            self.engine = CloudSynthesisEngine(
+                api_key=config.cloud_api_key,
+                base_url=config.base_url,
+                embedding_model=config.embedding_model,
+                synthesis_model=config.synthesis_model
+            )
+        else:
+            self.engine = OllamaSynthesisEngine(
+                base_url=config.base_url,
+                embedding_model=config.embedding_model,
+                synthesis_model=config.synthesis_model
+            )
+            
         self.renderer = TUIRenderer()
         self.watcher = DirectoryWatcher()
         self.parsers = [TextMarkdownParser(), PdfParser()]

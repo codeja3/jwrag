@@ -53,3 +53,11 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Test**: Write `test_main.py` for integration testing.
 - [x] **Implement**: Connect the full parsing and embedding pipeline in `sync_callback` inside `main.py`.
 - [x] **Implement**: Complete the execution pipeline in `process_query` inside `main.py`.
+
+## Phase 8: Cloud Integration & Data Security
+- [x] **Config**: Implement configuration system (`.env` or `config.yaml`) for routing between local and cloud models.
+- [x] **Test**: Write tests for the Data Sanitization pipeline (verifying PII removal and restoration).
+- [x] **Implement**: Build `DataSanitizer` using Presidio/SpaCy.
+- [x] **Test**: Write tests for `CloudSynthesisEngine` (mocking OpenAI/Anthropic APIs).
+- [x] **Implement**: Build `CloudSynthesisEngine` implementing `ISynthesisEngine`.
+- [x] **Integrate**: Wire configuration to select the correct engine in `main.py`.

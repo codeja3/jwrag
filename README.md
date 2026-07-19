@@ -142,15 +142,25 @@ JWRAG is engineered for absolute privacy:
 - **Defensive Parsing:** The system gracefully handles missing files, corrupted PDFs, and malformed LLM responses without crashing or leaking data.
 
 ### 5. Configuration & Customization
-You can customize the Ollama models and base URL by modifying the `OllamaSynthesisEngine` initialization in `jwrag/main.py`:
-```python
-self.engine = OllamaSynthesisEngine(
-    base_url="http://localhost:11434",
-    embedding_model="qwen3-embedding:4b",
-    synthesis_model="gemma4:26b-mlx"
-)
+JWRAG can be configured using a `.env` file in the project root to route between local offline models (Ollama) and frontier cloud models (e.g., OpenAI).
+
+**Local Ollama (Default & Air-gapped):**
+```env
+JWRAG_ENGINE=local
+JWRAG_EMBEDDING_MODEL=qwen3-embedding:4b
+JWRAG_SYNTHESIS_MODEL=gemma4:26b-mlx
+JWRAG_BASE_URL=http://localhost:11434
 ```
-Adjust these parameters to match your local Ollama environment and available models.
+
+**Cloud Models (with Local Data Sanitization):**
+To use cloud models without compromising data security, set the engine to `cloud`. JWRAG will run all text through a local **Data Sanitization Pipeline** (via Microsoft Presidio) to scrub Personal Identifiable Information (PII) before it ever leaves your machine.
+```env
+JWRAG_ENGINE=cloud
+JWRAG_CLOUD_API_KEY=sk-your-openai-api-key
+JWRAG_EMBEDDING_MODEL=text-embedding-3-small
+JWRAG_SYNTHESIS_MODEL=gpt-4o
+JWRAG_BASE_URL=https://api.openai.com/v1
+```
 
 ---
 

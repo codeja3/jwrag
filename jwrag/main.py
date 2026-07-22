@@ -97,6 +97,43 @@ class JWRAGApp:
                     logger.error(f"Error processing {filepath}: {e}")
 
         self.watcher.start(doc_dir, sync_callback)
+        
+        # Initial sweep: Delete DB records for files that no longer exist
+        try:
+            conn = self.store._get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT filepath FROM documents")
+            db_filepaths = [Path(row["filepath"]) for row in cursor.fetchall()]
+            for db_filepath in db_filepaths:
+                if not db_filepath.exists():
+                    logger.info(f"File deleted while app was closed: {db_filepath.name}")
+                    sync_callback("deleted", db_filepath)
+        except Exception as e:
+            logger.error(f"Error during initial DB cleanup: {e}")
+
+        # Initial sweep: Index new/modified files
+        logger.info("Scanning for new or modified documents...")
+        for filepath in doc_dir.iterdir():
+            if not filepath.is_file():
+                continue
+            
+            parser = next((p for p in self.parsers if p.can_parse(filepath)), None)
+            if not parser:
+                continue
+                
+            try:
+                with open(filepath, "rb") as f:
+                    current_hash = hashlib.md5(f.read()).hexdigest()
+            except (FileNotFoundError, PermissionError):
+                continue
+                
+            # Seed the watcher's sync manager state
+            self.watcher._sync_manager._file_hashes[str(filepath)] = current_hash
+            
+            existing_doc = self.store.get_document_by_path(filepath)
+            if not existing_doc or existing_doc.file_hash != current_hash:
+                logger.info(f"Discovered unindexed or changed file: {filepath.name}")
+                sync_callback("modified", filepath)
 
     def process_query(self, query: str) -> str:
         print("Embedding query...")

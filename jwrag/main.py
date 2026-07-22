@@ -40,6 +40,7 @@ class JWRAGApp:
         self.chunker = TextChunker()
 
         def sync_callback(event_type: str, filepath: Path) -> None:
+            filepath = filepath.resolve()
             logger.info(f"Sync event: {event_type} -> {filepath}")
             if event_type == "deleted":
                 self.store.delete_document(filepath)
@@ -116,6 +117,9 @@ class JWRAGApp:
         for filepath in doc_dir.iterdir():
             if not filepath.is_file():
                 continue
+            
+            # Resolve to absolute path so it matches watchdog and the DB
+            filepath = filepath.resolve()
             
             parser = next((p for p in self.parsers if p.can_parse(filepath)), None)
             if not parser:

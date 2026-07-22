@@ -56,28 +56,33 @@ class JWRAGApp:
                     with open(filepath, "rb") as f:
                         file_hash = hashlib.md5(f.read()).hexdigest()
                     
+                    import tqdm
+                    
                     doc_id = file_hash
                     
-                    chunk_idx = 0
+                    # Pre-calculate chunks to show progress
+                    all_chunks = []
                     for page in pages:
                         page_chunks = self.chunker.create_chunks(page["text"], doc_id)
                         for chunk in page_chunks:
-                            chunk_meta = chunk.metadata.copy()
-                            chunk_meta.update(page)
-                            chunk_meta.pop("text", None)
-                            chunk_meta["filename"] = filepath.name
-                            
-                            embedding = self.engine.generate_embedding(chunk.text_content)
-                            
-                            chunks.append(Chunk(
-                                id=f"{doc_id}_{chunk_idx}",
-                                document_id=doc_id,
-                                chunk_index=chunk_idx,
-                                text_content=chunk.text_content,
-                                embedding=embedding,
-                                metadata=chunk_meta
-                            ))
-                            chunk_idx += 1
+                            chunk.metadata.update(page)
+                            chunk.metadata.pop("text", None)
+                            chunk.metadata["filename"] = filepath.name
+                            all_chunks.append(chunk)
+                    
+                    chunks = []
+                    logger.info(f"Generating embeddings for {len(all_chunks)} chunks...")
+                    
+                    for chunk_idx, chunk in enumerate(tqdm.tqdm(all_chunks, desc=f"Embedding {filepath.name}")):
+                        embedding = self.engine.generate_embedding(chunk.text_content)
+                        chunks.append(Chunk(
+                            id=f"{doc_id}_{chunk_idx}",
+                            document_id=doc_id,
+                            chunk_index=chunk_idx,
+                            text_content=chunk.text_content,
+                            embedding=embedding,
+                            metadata=chunk.metadata
+                        ))
                             
                     doc_meta = DocumentMetadata(
                         id=doc_id,

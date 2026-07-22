@@ -99,6 +99,20 @@ class JWRAGApp:
 
         self.watcher.start(doc_dir, sync_callback)
         
+        # Migration: Normalize all database paths to absolute resolved paths
+        try:
+            conn = self.store._get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, filepath FROM documents")
+            for row in cursor.fetchall():
+                p = Path(row["filepath"])
+                if not p.is_absolute():
+                    resolved_p = p.resolve()
+                    cursor.execute("UPDATE documents SET filepath = ? WHERE id = ?", (str(resolved_p), row["id"]))
+            conn.commit()
+        except Exception as e:
+            logger.error(f"Error migrating database paths: {e}")
+        
         # Initial sweep: Delete DB records for files that no longer exist
         try:
             conn = self.store._get_connection()

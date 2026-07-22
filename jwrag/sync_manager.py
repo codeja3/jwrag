@@ -20,10 +20,13 @@ class IndexSyncManager:
             Hexadecimal string representation of the MD5 hash.
         """
         hasher = hashlib.md5()
-        with open(filepath, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hasher.update(chunk)
-        return hasher.hexdigest()
+        try:
+            with open(filepath, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hasher.update(chunk)
+            return hasher.hexdigest()
+        except (FileNotFoundError, PermissionError):
+            return ""
 
     def process_event(self, event_type: str, filepath: Path) -> Optional[str]:
         """Evaluates a filesystem event and returns the appropriate sync action.

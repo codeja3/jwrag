@@ -28,17 +28,20 @@ class DirectoryWatcher:
         
         class Handler(FileSystemEventHandler):
             def on_any_event(self, event):
-                if event.is_directory:
-                    return
+                try:
+                    if event.is_directory:
+                        return
+                        
+                    filepath = Path(event.src_path)
                     
-                filepath = Path(event.src_path)
-                
-                # Handle race condition where a file is deleted during modification
-                if not filepath.exists() and event.event_type == "modified":
-                    self._process("deleted", filepath)
-                    return
-                    
-                self._process(event.event_type, filepath)
+                    # Handle race condition where a file is deleted during modification
+                    if not filepath.exists() and event.event_type == "modified":
+                        self._process("deleted", filepath)
+                        return
+                        
+                    self._process(event.event_type, filepath)
+                except Exception as e:
+                    logger.error(f"Error handling file event {event.event_type} for {event.src_path}: {e}")
 
             def _process(self, event_type: str, filepath: Path):
                 action = self.sync_manager.process_event(event_type, filepath)

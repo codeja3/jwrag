@@ -38,7 +38,14 @@ class OllamaSynthesisEngine(ISynthesisEngine):
 
     def synthesize(self, query: str, chunks: List[Chunk]) -> SynthesisResult:
         """Constructs prompt, requests LLM synthesis from Ollama, and parses the multi-perspective result."""
-        context_text = "\n\n---\n\n".join([chunk.text_content for chunk in chunks])
+        context_blocks = []
+        for chunk in chunks:
+            fname = chunk.metadata.get("filename", "Unknown")
+            page = chunk.metadata.get("page_number", "Unknown")
+            para = chunk.metadata.get("paragraph", "Unknown")
+            context_blocks.append(f"[Document: {fname}, Page: {page}, Paragraph: {para}]\n{chunk.text_content}")
+            
+        context_text = "\n\n---\n\n".join(context_blocks)
         
         prompt = f"""You are JWRAG (Judgement Weighted RAG), a local multi-perspective decision-support engine. 
 Analyze the provided document context below to answer the user's query.
@@ -58,8 +65,16 @@ INSTRUCTIONS:
          "reasoning": "Detailed justification...",
          "conclusions": ["Conclusion 1", "Conclusion 2"]
        }}
+     ],
+     "references": [
+       {{
+         "filename": "document_name.pdf",
+         "page": "12",
+         "paragraph": "3"
+       }}
      ]
 }}
+5. Populate the `references` array using the metadata provided in the CONTEXT blocks. Include the document name, page, and paragraph for each cited source.
 
 ---
 CONTEXT:
@@ -81,7 +96,7 @@ USER QUERY:
                 
                 parsed_data = self._parse_json(raw_response)
                 if parsed_data and "options" in parsed_data:
-                    return self._build_synthesis_result(query, parsed_data["options"])
+                    return self._build_synthesis_result(query, parsed_data)
                     
                 logger.warning(f"Attempt {attempt + 1}: Failed to extract valid JSON options. Retrying...")
                 
@@ -124,13 +139,23 @@ USER QUERY:
                 
         return None
 
-    def _build_synthesis_result(self, query: str, options_data: list) -> SynthesisResult:
+    def _build_synthesis_result(self, query: str, parsed_data: dict) -> SynthesisResult:
         """Maps parsed JSON data to SynthesisResult DTO."""
+        from jwrag.models import Reference
         synthesis_options = []
-        for opt in options_data:
+        for opt in parsed_data.get("options", []):
             synthesis_options.append(SynthesisOption(
                 title=opt.get("title", "Untitled"),
                 reasoning=opt.get("reasoning", ""),
                 conclusions=opt.get("conclusions", [])
             ))
-        return SynthesisResult(query=query, options=synthesis_options, references=[])
+            
+        references = []
+        for ref in parsed_data.get("references", []):
+            references.append(Reference(
+                filename=ref.get("filename", "Unknown"),
+                page=str(ref.get("page", "")) if ref.get("page") else None,
+                paragraph=str(ref.get("paragraph", "")) if ref.get("paragraph") else None
+            ))
+            
+        return SynthesisResult(query=query, options=synthesis_options, references=references)

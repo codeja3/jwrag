@@ -1,5 +1,5 @@
 from typing import List
-from jwrag.models import SynthesisOption, SynthesisResult
+from jwrag.models import SynthesisOption, SynthesisResult, Reference
 
 
 class TUIRenderer:
@@ -16,12 +16,20 @@ class TUIRenderer:
             output += f"[{i}] {opt.title}\nReasoning: {opt.reasoning}\nConclusions: {', '.join(opt.conclusions)}\n\n"
         return output
 
-    def render_references(self, references: List[str]) -> str:
+    def render_references(self, references: List[Reference]) -> str:
         if not references:
             return ""
         output = "\n--- References ---\n"
         for ref in references:
-            output += f"- {ref}\n"
+            ref_str = ref.filename
+            parts = []
+            if ref.page:
+                parts.append(f"Page: {ref.page}")
+            if ref.paragraph:
+                parts.append(f"Paragraph: {ref.paragraph}")
+            if parts:
+                ref_str += f" ({', '.join(parts)})"
+            output += f"- {ref_str}\n"
         return output
 
     def render_result(self, result: SynthesisResult) -> str:

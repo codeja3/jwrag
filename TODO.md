@@ -69,5 +69,5 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Implement**: Modify document parsers and chunking logic to extract and tag chunks with paragraph identifiers.
 - [x] **Test**: Write tests for context block prefixing and parsing the new `references` output from LLM.
 - [x] **Implement**: Modify `ISynthesisEngine` implementations to prefix context blocks with metadata and parse detailed `references`.
-- [ ] **Test**: Write tests for formatting the detailed references section in the TUI output.
-- [ ] **Implement**: Update TUI formatting to display the detailed references cleanly at the bottom of the output.
+- [x] **Test**: Write tests for formatting the detailed references section in the TUI output.
+- [x] **Implement**: Update TUI formatting to display the detailed references cleanly at the bottom of the output.

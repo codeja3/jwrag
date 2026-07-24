@@ -8,7 +8,7 @@ from jwrag.main import JWRAGApp
 from jwrag.models import DocumentMetadata, Chunk, SynthesisResult, SynthesisOption
 
 @pytest.fixture
-def mock_app(mocker):
+def mock_app(mocker, tmp_path):
     mocker.patch("jwrag.main.SQLiteVectorStore")
     mocker.patch("jwrag.main.OllamaSynthesisEngine")
     mocker.patch("jwrag.main.DirectoryWatcher")
@@ -18,17 +18,17 @@ def mock_app(mocker):
     mock_config.engine_type = "local"
     mocker.patch("jwrag.main.load_config", return_value=mock_config)
     
-    app = JWRAGApp(Path("dummy_db.db"), Path("dummy_dir"))
+    app = JWRAGApp(Path("dummy_db.db"), tmp_path)
     return app
 
-def test_sync_callback_deleted(mock_app):
+def test_sync_callback_deleted(mock_app, tmp_path):
     callback = mock_app.watcher.start.call_args[0][1]
-    filepath = Path("dummy_dir/test.txt")
+    filepath = (tmp_path / "test.txt").resolve()
     
     callback("deleted", filepath)
     mock_app.store.delete_document.assert_called_once_with(filepath)
 
-def test_sync_callback_modified(mock_app, mocker):
+def test_sync_callback_modified(mock_app, mocker, tmp_path):
     mocker.patch("jwrag.main.TextMarkdownParser")
     mocker.patch("jwrag.main.PdfParser")
     mocker.patch("jwrag.main.TextChunker")
@@ -51,7 +51,7 @@ def test_sync_callback_modified(mock_app, mocker):
     mock_app.engine.generate_embedding.return_value = np.array([0.1, 0.2], dtype=np.float32)
     
     callback = mock_app.watcher.start.call_args[0][1]
-    filepath = Path("dummy_dir/test.txt")
+    filepath = (tmp_path / "test.txt").resolve()
     
     # Mocking open for compute_hash
     mocker.patch("builtins.open", mocker.mock_open(read_data=b"data"))
@@ -79,10 +79,11 @@ def test_process_query(mock_app):
     dummy_chunks = [
         Chunk("id1", "doc1", 0, "content", dummy_vector, {"filename": "test.txt"})
     ]
+    from jwrag.models import Reference
     dummy_result = SynthesisResult(
         query=query, 
         options=[SynthesisOption("Title", "Reasoning", ["Concl"])],
-        references=["test.txt"]
+        references=[Reference(filename="test.txt")]
     )
     
     mock_app.engine.generate_embedding.return_value = dummy_vector

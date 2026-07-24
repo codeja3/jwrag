@@ -1,6 +1,6 @@
 import pytest
 from jwrag.cli import TUIRenderer
-from jwrag.models import SynthesisResult, SynthesisOption
+from jwrag.models import SynthesisResult, SynthesisOption, Reference
 
 
 def test_render_query() -> None:
@@ -20,6 +20,9 @@ def test_render_options() -> None:
 
 def test_render_references() -> None:
     renderer = TUIRenderer()
-    result = SynthesisResult(query="Q", options=[], references=["doc1.txt"])
+    ref1 = Reference(filename="doc1.txt")
+    ref2 = Reference(filename="doc2.pdf", page="10", paragraph="4")
+    result = SynthesisResult(query="Q", options=[], references=[ref1, ref2])
     output = renderer.render_result(result)
-    assert "doc1.txt" in output
+    assert "- doc1.txt" in output
+    assert "- doc2.pdf (Page: 10, Paragraph: 4)" in output

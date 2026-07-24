@@ -162,13 +162,22 @@ class JWRAGApp:
         print("Synthesizing...")
         result = self.engine.synthesize(query, chunks)
         
-        unique_refs = list(set([c.metadata.get("filename", "Unknown") for c in chunks]))
-        final_result = SynthesisResult(
-            query=result.query,
-            options=result.options,
-            references=unique_refs
-        )
-        
+        final_result = result
+        if not final_result.references:
+            from jwrag.models import Reference
+            fallback_refs = []
+            seen = set()
+            for c in chunks:
+                fname = c.metadata.get("filename", "Unknown")
+                if fname not in seen:
+                    fallback_refs.append(Reference(filename=fname))
+                    seen.add(fname)
+            final_result = SynthesisResult(
+                query=result.query,
+                options=result.options,
+                references=fallback_refs
+            )
+            
         return self.renderer.render_result(final_result)
 
     def stop(self) -> None:

@@ -19,7 +19,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Synchronization Accuracy: 100% of document creations, modifications, and deletions are accurately reflected in the search index without manual intervention.
 
-* Synthesis Compliance: Every qualified query successfully yields multiple independent judgment options alongside clear, unambiguous file citations.
+* Synthesis Compliance: Every qualified query successfully yields multiple independent judgment options alongside clear, unambiguous file citations, including the document name and relevant page and paragraph (with a number if exists or other diacritic marks).
 
 ## Scope (In / Out)
 
@@ -54,7 +54,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Cross-Document Synthesis: A user queries a complex scenario spanning multiple separate policy documents. Instead of a single response, the system presents two or three distinct scenarios (e.g., a conservative option vs. a progressive option) based on the combined data to assist in decision making.
 
-* Audit Trails: A user reviews the generated options and instantly verifies the source material via explicit, appended filenames in the terminal.
+* Audit Trails: A user reviews the generated options and instantly verifies the source material via explicit citations in the terminal, including the document name, relevant page, and paragraph (with a number if exists or other diacritic marks).
 
 
 ## Requirements
@@ -83,7 +83,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 ### 4. Interactive Terminal UI (TUI)
 * The interface must be a straightforward interactive command-line environment.
 
-* Outputs must follow a strict layout: the user’s query, the structured alternative judgment options, and a standalone references section explicitly listing the names of the source documents.
+* Outputs must follow a strict layout: the user’s query, the structured alternative judgment options, and a standalone references section explicitly listing the names of the source documents, along with the relevant page and paragraph (with a number if exists or other diacritic marks).
 
 ### Constraints
 * Hardware and Environment: Must execute natively on a local workstation without relying on cloud-based API keys or network availability.
@@ -99,6 +99,6 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Queries analyzing overlapping source text output multiple clear, non-identical judgment options.
 
-* Every terminal response lists the correct, un-hallucinated file names of the referenced documents.
+* Every terminal response lists the correct, un-hallucinated file names of the referenced documents, including the relevant page and paragraph (with a number if exists or other diacritic marks).
 
 * The entire pipeline passes a local network traffic audit, demonstrating perfectly air-gapped execution during indexing and inference tasks.

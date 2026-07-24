@@ -61,3 +61,13 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Test**: Write tests for `CloudSynthesisEngine` (mocking OpenAI/Anthropic APIs).
 - [x] **Implement**: Build `CloudSynthesisEngine` implementing `ISynthesisEngine`.
 - [x] **Integrate**: Wire configuration to select the correct engine in `main.py`.
+
+## Phase 9: Detailed Judgment References Feature
+- [x] **Test**: Write tests for `Reference` DTO and updated `SynthesisResult`.
+- [x] **Implement**: Update DTOs to include `Reference` object with `page` and `paragraph`.
+- [ ] **Test**: Write tests for extracting paragraph identifiers in document parsers and chunking logic.
+- [ ] **Implement**: Modify document parsers and chunking logic to extract and tag chunks with paragraph identifiers.
+- [ ] **Test**: Write tests for context block prefixing and parsing the new `references` output from LLM.
+- [ ] **Implement**: Modify `ISynthesisEngine` implementations to prefix context blocks with metadata and parse detailed `references`.
+- [ ] **Test**: Write tests for formatting the detailed references section in the TUI output.
+- [ ] **Implement**: Update TUI formatting to display the detailed references cleanly at the bottom of the output.

@@ -82,7 +82,7 @@ The system will pass data between modules using immutable Python `dataclasses`.
 ```python
 import dataclasses
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import numpy as np
 
 @dataclasses.dataclass(frozen=True)
@@ -109,10 +109,16 @@ class SynthesisOption:
     conclusions: List[str]
 
 @dataclasses.dataclass(frozen=True)
+class Reference:
+    filename: str
+    page: Optional[str] = None
+    paragraph: Optional[str] = None
+
+@dataclasses.dataclass(frozen=True)
 class SynthesisResult:
     query: str
     options: List[SynthesisOption]
-    references: List[str]   # List of filenames
+    references: List[Reference]
 ```
 
 ---
@@ -135,7 +141,7 @@ To maintain a strict offline, air-gapped status, JWRAG utilizes local embedding 
    - Chunk Size: 1,024 characters (approx.   250–300 tokens). 
    - Recommended Overlap: 150–200 characters (approx.   15–20%). 
    - Separators: Maintain the hierarchy ["\n\n", "\n", ". ", " ", ""] to prioritize splitting at paragraphs and sentences before forcing a character count cut. 
-- **Metadata Tagging:** Each chunk is tagged with its source file path, name, page number (for PDFs), and hash.
+- **Metadata Tagging:** Each chunk is tagged with its source file path, name, page number (for PDFs), paragraph identifier (number or other diacritic marks), and hash.
 
 ### 3. Judgment Synthesis (LLM)
 - **Model:** Local Ollama model configured via environment variable; default to `gemma4:26b-mlx`.
@@ -160,11 +166,20 @@ INSTRUCTIONS:
        "reasoning": "Detailed justification...",
        "conclusions": ["Conclusion 1", "Conclusion 2"]
      }
+   ],
+   "references": [
+     {
+       "filename": "document_name.pdf",
+       "page": "12",
+       "paragraph": "3"
+     }
    ]
 }
+5. Populate the `references` array using the metadata provided in the CONTEXT blocks. Include the document name, page, and paragraph for each cited source.
 
 ---
 CONTEXT:
+(Each chunk will be prefixed with [Document: {filename}, Page: {page}, Paragraph: {paragraph}])
 {context_text}
 ---
 USER QUERY:
@@ -292,14 +307,13 @@ class ISynthesisEngine(abc.ABC):
       $$\text{similarity} = \frac{A \cdot B}{\|A\| \|B\|}$$
     - Sort chunks and extract the top-K chunks.
 4. **LLM Synthesis Request:**
-    - Assemble context block from chunk text content.
+    - Assemble context block from chunk text content, prefixing each with its document name, page, and paragraph.
     - Format context and query into prompt.
     - Call local Ollama chat API.
-    - Extract and validate JSON response.
+    - Extract and validate JSON response, including the generated references.
 5. **TUI Output Formatting:**
-    - Extract unique document names from chunk metadata.
     - Display perspectives in user-friendly CLI blocks.
-    - Print clean "References" section at bottom.
+    - Print clean "References" section at bottom, explicitly listing the document names, pages, and paragraphs as returned by the LLM.
 
 ### 5. LLM Response Parsing & Retry-Fallback Mechanism
 To mitigate LLM output formatting drift and ensure robust JSON extraction, the Synthesis Engine must implement a strict multi-stage parsing pipeline with automatic retries:

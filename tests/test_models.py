@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 import numpy as np
-from jwrag.models import DocumentMetadata, Chunk, SynthesisOption, SynthesisResult
+from jwrag.models import DocumentMetadata, Chunk, SynthesisOption, SynthesisResult, Reference
 
 
 def test_document_metadata_is_frozen() -> None:
@@ -35,7 +35,14 @@ def test_synthesis_option_is_frozen() -> None:
         opt.title = "B"
 
 
+def test_reference_is_frozen() -> None:
+    ref = Reference(filename="doc.pdf", page="1", paragraph="2")
+    with pytest.raises(Exception):
+        ref.filename = "other.pdf"
+
+
 def test_synthesis_result_is_frozen() -> None:
-    res = SynthesisResult(query="Q", options=[], references=[])
+    ref = Reference(filename="doc.pdf", page="1", paragraph="2")
+    res = SynthesisResult(query="Q", options=[], references=[ref])
     with pytest.raises(Exception):
         res.query = "Q2"

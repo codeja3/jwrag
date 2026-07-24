@@ -1,6 +1,6 @@
 import dataclasses
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import numpy as np
 
 
@@ -34,8 +34,16 @@ class SynthesisOption:
 
 
 @dataclasses.dataclass(frozen=True)
+class Reference:
+    """Immutable citation mapping to a document location."""
+    filename: str
+    page: Optional[str] = None
+    paragraph: Optional[str] = None
+
+
+@dataclasses.dataclass(frozen=True)
 class SynthesisResult:
     """Immutable result containing query, options, and references."""
     query: str
     options: List[SynthesisOption]
-    references: List[str]
+    references: List[Reference]

@@ -19,8 +19,11 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
          *        **Spec-Driven**: `SPEC.md` is the immutable source of truth.
 *        **Non-Goals (Out of Scope)**: Cloud integrations, multi-user/RBAC, and OCR for image-based PDFs.
 
+#### Key Architectural Decisions
+*        **Detailed Judgment References**: To ensure highly accurate and verifiable citations, context chunks are prefixed with metadata (document name, page, and paragraph identifiers). The LLM is explicitly prompted to use these prefixes to generate detailed, structured citations in the JSON output, shifting the responsibility of reference tracking directly to the synthesis engine.
+
 ### 4. Running Checklist & Active Task Tracker
-*Current Status: Phase 7 Complete. Project Core Architecture Delivered & Fully Integrated.*
+*Current Status: Phase 8 Complete. Beginning Phase 9: Detailed Judgment References Feature.*
 
 *        [x] **Phase 1: Project Setup**: `uv` init, `pyproject.toml`, and dependencies installation (`watchdog`, `pypdf`, `httpx`, `pytest`).
 *        [x] **Phase 2: Database & Core DTOs (TDD)**: Implement `dataclasses` and `SQLiteVectorStore`.
@@ -29,6 +32,8 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        [x] **Phase 5: Directory Sync (TDD)**: Build `watchdog` integration and `IndexSyncManager`.
 *        [x] **Phase 6: Terminal UI (TUI)**: Build and integrate the CLI interface.
 *        [x] **Phase 7: Final Pipeline Integration**: Replace stubs in `main.py` to fully connect event handlers and search pipeline.
+*        [x] **Phase 8: Cloud Integration**: Build and integrate `CloudSynthesisEngine` and Data Sanitizer.
+*        [ ] **Phase 9: Detailed Judgment References**: Update DTOs, parsers, context prefixing, and TUI formatting (TDD).
 
 ### 5. Persistent Scratchpad / Error Log
 *(Use this space to track active blockages, temporary configurations, or recurring errors across sessions)*

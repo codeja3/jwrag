@@ -36,13 +36,19 @@ class TextChunker:
         while start < len(text):
             end = min(start + self.chunk_size, len(text))
             
-            split_pos = self._find_split_point(text, start, end)
+            if end == len(text):
+                split_pos = end
+            else:
+                split_pos = self._find_split_point(text, start, end)
             # If split_pos is at the very beginning or beyond end, force cut
             if split_pos <= start:
                 split_pos = end
                 
             chunks.append(text[start:split_pos])
             
+            if split_pos == len(text):
+                break
+                
             # Move start forward with overlap
             next_start = split_pos - self.overlap
             if next_start <= start:
@@ -51,12 +57,13 @@ class TextChunker:
             
         return [c for c in chunks if c.strip()]
 
-    def create_chunks(self, text: str, doc_id: str) -> List[Chunk]:
+    def create_chunks(self, text: str, doc_id: str, metadata: dict = None) -> List[Chunk]:
         """Splits text into chunks and wraps them in Chunk DTOs.
         
         Args:
             text: The raw text string to split.
             doc_id: The identifier of the source document.
+            metadata: Optional dictionary of metadata to tag the chunks with.
             
         Returns:
             A list of Chunk objects ready for embedding and storage.
@@ -70,6 +77,6 @@ class TextChunker:
                 chunk_index=i,
                 text_content=segment,
                 embedding=np.zeros((1,), dtype=np.float32), # Placeholder, will be replaced by actual embedding
-                metadata={}
+                metadata=metadata.copy() if metadata else {}
             ))
         return chunks

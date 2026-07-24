@@ -16,7 +16,7 @@ def test_chunker_handles_short_text(chunker: TextChunker) -> None:
 
 def test_chunker_respects_separator_hierarchy(chunker: TextChunker) -> None:
     # Create a long text with paragraphs
-    text = "\n\n".join(["Paragraph " + str(i) for i in range(20)])
+    text = "\n\n".join(["Paragraph " + str(i) * 100 for i in range(20)])
     chunks = chunker.chunk(text)
     
     # Verify chunks are not empty and respect boundaries roughly
@@ -40,8 +40,10 @@ def test_chunker_applies_overlap(chunker: TextChunker) -> None:
 
 def test_chunker_creates_chunks_with_metadata(chunker: TextChunker) -> None:
     text = "Test content for chunking."
-    chunks = chunker.create_chunks(text, "doc-1")
+    test_meta = {"page_number": 1, "paragraph": 2, "filename": "test.txt"}
+    chunks = chunker.create_chunks(text, "doc-1", test_meta)
     
     assert len(chunks) == 1
     assert chunks[0].document_id == "doc-1"
     assert chunks[0].chunk_index == 0
+    assert chunks[0].metadata == test_meta

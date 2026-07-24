@@ -33,8 +33,18 @@ class TextMarkdownParser(IDocumentParser):
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 text = f.read()
-            logger.info(f"Successfully parsed text/markdown file: {filepath}")
-            return [{"text": text, "page_number": 1}]
+            
+            paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+            extracted = []
+            for i, p in enumerate(paragraphs):
+                extracted.append({
+                    "text": p,
+                    "page_number": 1,
+                    "paragraph": i + 1
+                })
+                
+            logger.info(f"Successfully parsed text/markdown file: {filepath} ({len(extracted)} paragraphs)")
+            return extracted
         except Exception as e:
             logger.error(f"Failed to parse text/markdown file {filepath}: {e}")
             raise
@@ -71,12 +81,14 @@ class PdfParser(IDocumentParser):
                 reader = pypdf.PdfReader(f)
                 for page_num in range(len(reader.pages)):
                     page_text = reader.pages[page_num].extract_text() or ""
-                    if page_text.strip():
+                    paragraphs = [p.strip() for p in page_text.split("\n\n") if p.strip()]
+                    for i, p in enumerate(paragraphs):
                         extracted_pages.append({
-                            "text": page_text,
-                            "page_number": page_num + 1
+                            "text": p,
+                            "page_number": page_num + 1,
+                            "paragraph": i + 1
                         })
-            logger.info(f"Successfully parsed PDF file: {filepath} ({len(extracted_pages)} pages)")
+            logger.info(f"Successfully parsed PDF file: {filepath} ({len(extracted_pages)} paragraphs extracted from {len(reader.pages)} pages)")
         except Exception as e:
             logger.error(f"Failed to parse PDF file {filepath}: {e}")
             raise

@@ -64,12 +64,11 @@ class JWRAGApp:
                     # Pre-calculate chunks to show progress
                     all_chunks = []
                     for page in pages:
-                        page_chunks = self.chunker.create_chunks(page["text"], doc_id)
-                        for chunk in page_chunks:
-                            chunk.metadata.update(page)
-                            chunk.metadata.pop("text", None)
-                            chunk.metadata["filename"] = filepath.name
-                            all_chunks.append(chunk)
+                        meta = page.copy()
+                        meta.pop("text", None)
+                        meta["filename"] = filepath.name
+                        page_chunks = self.chunker.create_chunks(page["text"], doc_id, meta)
+                        all_chunks.extend(page_chunks)
                     
                     chunks = []
                     logger.info(f"Generating embeddings for {len(all_chunks)} chunks...")

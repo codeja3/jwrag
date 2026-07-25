@@ -2,6 +2,7 @@
 Data/
 data/
 docs_raw/
+documents/
 test_docs/
 jwrag_index.db
 jwrag_index.db-*

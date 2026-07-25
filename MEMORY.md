@@ -21,9 +21,10 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 
 #### Key Architectural Decisions
 *        **Detailed Judgment References**: To ensure highly accurate and verifiable citations, context chunks are prefixed with metadata (document name, page, and paragraph identifiers). The LLM is explicitly prompted to use these prefixes to generate detailed, structured citations in the JSON output, shifting the responsibility of reference tracking directly to the synthesis engine.
+*        **Data Security & Untracked Documents**: To guarantee zero data egress and prevent sensitive file leaks, all test or real files in `documents/` are strictly excluded from version control via `.gitignore`. If sensitive files are accidentally pushed, git history is rewritten and purged using `git-filter-repo` before force-pushing.
 
 ### 4. Running Checklist & Active Task Tracker
-*Current Status: Phase 8 Complete. Beginning Phase 9: Detailed Judgment References Feature.*
+*Current Status: Phase 9 Complete. All feature branches merged into `main`.*
 
 *        [x] **Phase 1: Project Setup**: `uv` init, `pyproject.toml`, and dependencies installation (`watchdog`, `pypdf`, `httpx`, `pytest`).
 *        [x] **Phase 2: Database & Core DTOs (TDD)**: Implement `dataclasses` and `SQLiteVectorStore`.
@@ -33,7 +34,7 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        [x] **Phase 6: Terminal UI (TUI)**: Build and integrate the CLI interface.
 *        [x] **Phase 7: Final Pipeline Integration**: Replace stubs in `main.py` to fully connect event handlers and search pipeline.
 *        [x] **Phase 8: Cloud Integration**: Build and integrate `CloudSynthesisEngine` and Data Sanitizer.
-*        [ ] **Phase 9: Detailed Judgment References**: Update DTOs, parsers, context prefixing, and TUI formatting (TDD).
+*        [x] **Phase 9: Detailed Judgment References**: Update DTOs, parsers, context prefixing, and TUI formatting (TDD).
 
 ### 5. Persistent Scratchpad / Error Log
 *(Use this space to track active blockages, temporary configurations, or recurring errors across sessions)*

@@ -87,3 +87,7 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 ## Phase 12: Heuristic PDF Page Parsing
 - [x] **Test**: Write failing test in `test_parser.py` that verifies `PdfParser` uses a heuristic fallback to parse physical page numbers from text headers/footers if `page_labels` is missing.
 - [x] **Implement**: Write `_extract_printed_page_number` using regex matching on first/last text lines and integrate into `PdfParser`.
+
+## Phase 13: Index-Based Page Calibration
+- [x] **Test**: Write failing test in `test_parser.py` for automated page offset calculation via topic index scanning.
+- [x] **Implement**: Write `_calibrate_page_offset` in `PdfParser` which samples 5-10 terms from the document's subject index (at the end of the file) and cross-references them against absolute text pages to establish an offset.

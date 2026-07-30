@@ -39,6 +39,7 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        [x] **Phase 10: Dynamic Location Markers**: Replaced flat page/paragraph fields with a generic `markers` dict across DTOs, parsers, prompt schema, and TUI.
 *        [x] **Phase 11: PDF Page Labels Alignment**: Update `PdfParser` to extract native `pypdf` page labels (e.g. Roman numerals) for citation alignment.
 *        [x] **Phase 12: Heuristic PDF Page Parsing**: Implemented regex fallback to extract physical printed page numbers directly from page headers/footers when metadata is missing.
+*        [x] **Phase 13: Index-Based Page Calibration**: Implemented a dynamic algorithm to scan the document's subject index, sample terms, and calculate an absolute-to-printed page offset via substring search consensus.
 
 ### 5. Persistent Scratchpad / Error Log
 *(Use this space to track active blockages, temporary configurations, or recurring errors across sessions)*

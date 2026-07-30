@@ -139,3 +139,37 @@ def test_pdf_parser_heuristic_fallback(mocker) -> None:
     assert result[0]["markers"]["page"] == "45"
     # The bottom marker should be pulled for the second page
     assert result[-1]["markers"]["page"] == "ix"
+
+
+def test_pdf_parser_index_calibration(mocker) -> None:
+    # Simulate a 10-page document
+    # Page 0-2: Front matter
+    # Page 3: Content page (Absolute 3, Printed 1), containing 'Apples'
+    # Page 4: Content page (Absolute 4, Printed 2), containing 'Bananas'
+    # Page 9: Index page containing 'Apples 1', 'Bananas 2'
+    
+    mock_reader = mocker.MagicMock()
+    pages = [mocker.MagicMock() for _ in range(10)]
+    for i, p in enumerate(pages):
+        p.extract_text.return_value = f"Dummy text for page {i}"
+        
+    pages[3].extract_text.return_value = "We love Apples. They are great."
+    pages[4].extract_text.return_value = "Bananas are yellow."
+    pages[9].extract_text.return_value = "Index\nApples ........ 1\nBananas ........ 2"
+    
+    mock_reader.pages = pages
+    mock_reader.page_labels = []
+    
+    parser = PdfParser()
+    mocker.patch("jwrag.parsers.pypdf.PdfReader", return_value=mock_reader)
+    mocker.patch("builtins.open", mocker.mock_open())
+    
+    result = parser.extract_text_with_metadata(Path("dummy.pdf"))
+    
+    # Offset should be: Absolute(3) - Printed(1) = 2
+    # Page 3 -> printed '1'
+    assert result[3]["markers"]["page"] == "1"
+    # Page 4 -> printed '2'
+    assert result[4]["markers"]["page"] == "2"
+    # Page 9 -> printed '7'
+    assert result[9]["markers"]["page"] == "7"

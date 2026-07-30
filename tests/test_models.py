@@ -36,13 +36,13 @@ def test_synthesis_option_is_frozen() -> None:
 
 
 def test_reference_is_frozen() -> None:
-    ref = Reference(filename="doc.pdf", page="1", paragraph="2")
+    ref = Reference(filename="doc.pdf", markers={"chapter": "IV", "clause": "3b"})
     with pytest.raises(Exception):
         ref.filename = "other.pdf"
 
 
 def test_synthesis_result_is_frozen() -> None:
-    ref = Reference(filename="doc.pdf", page="1", paragraph="2")
+    ref = Reference(filename="doc.pdf", markers={"chapter": "IV", "clause": "3b"})
     res = SynthesisResult(query="Q", options=[], references=[ref])
     with pytest.raises(Exception):
         res.query = "Q2"

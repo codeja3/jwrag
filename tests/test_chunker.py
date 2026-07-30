@@ -40,7 +40,7 @@ def test_chunker_applies_overlap(chunker: TextChunker) -> None:
 
 def test_chunker_creates_chunks_with_metadata(chunker: TextChunker) -> None:
     text = "Test content for chunking."
-    test_meta = {"page_number": 1, "paragraph": 2, "filename": "test.txt"}
+    test_meta = {"markers": {"page": "1", "paragraph": "2"}, "filename": "test.txt"}
     chunks = chunker.create_chunks(text, "doc-1", test_meta)
     
     assert len(chunks) == 1

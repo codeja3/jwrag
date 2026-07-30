@@ -47,11 +47,11 @@ def test_text_parser_extract_content(text_file: Path) -> None:
     result = parser.extract_text_with_metadata(text_file)
     assert len(result) == 2
     assert result[0]["text"] == "This is paragraph one."
-    assert result[0]["page_number"] == 1
-    assert result[0]["paragraph"] == 1
+    assert result[0]["markers"]["page"] == "1"
+    assert result[0]["markers"]["paragraph"] == "1"
     assert result[1]["text"] == "This is paragraph two."
-    assert result[1]["page_number"] == 1
-    assert result[1]["paragraph"] == 2
+    assert result[1]["markers"]["page"] == "1"
+    assert result[1]["markers"]["paragraph"] == "2"
 
 
 def test_md_parser_extract_content(md_file: Path) -> None:
@@ -59,9 +59,9 @@ def test_md_parser_extract_content(md_file: Path) -> None:
     result = parser.extract_text_with_metadata(md_file)
     assert len(result) == 2
     assert "# Header" in result[0]["text"]
-    assert result[0]["paragraph"] == 1
+    assert result[0]["markers"]["paragraph"] == "1"
     assert "Some markdown content here." in result[1]["text"]
-    assert result[1]["paragraph"] == 2
+    assert result[1]["markers"]["paragraph"] == "2"
 
 
 def test_pdf_parser_can_parse(pdf_file: Path) -> None:
@@ -88,11 +88,30 @@ def test_pdf_parser_extracts_paragraphs(mocker) -> None:
     result = parser.extract_text_with_metadata(Path("dummy.pdf"))
     
     assert len(result) == 4
-    assert result[0]["paragraph"] == 1
-    assert result[0]["page_number"] == 1
-    assert result[1]["paragraph"] == 2
-    assert result[1]["page_number"] == 1
-    assert result[2]["paragraph"] == 1
-    assert result[2]["page_number"] == 2
-    assert result[3]["paragraph"] == 2
-    assert result[3]["page_number"] == 2
+    assert result[0]["markers"]["paragraph"] == "1"
+    assert result[0]["markers"]["page"] == "1"
+    assert result[1]["markers"]["paragraph"] == "2"
+    assert result[1]["markers"]["page"] == "1"
+    assert result[2]["markers"]["paragraph"] == "1"
+    assert result[2]["markers"]["page"] == "2"
+    assert result[3]["markers"]["paragraph"] == "2"
+    assert result[3]["markers"]["page"] == "2"
+
+
+def test_pdf_parser_extracts_page_labels(mocker) -> None:
+    mock_page = mocker.MagicMock()
+    mock_page.extract_text.return_value = "Some text."
+    mock_reader = mocker.MagicMock()
+    mock_reader.pages = [mock_page, mock_page, mock_page]
+    # Simulate PDF with roman numeral intro and then page 1
+    mock_reader.page_labels = ["i", "ii", "1"]
+    
+    parser = PdfParser()
+    mocker.patch("jwrag.parsers.pypdf.PdfReader", return_value=mock_reader)
+    mocker.patch("builtins.open", mocker.mock_open())
+    result = parser.extract_text_with_metadata(Path("dummy.pdf"))
+    
+    assert len(result) == 3
+    assert result[0]["markers"]["page"] == "i"
+    assert result[1]["markers"]["page"] == "ii"
+    assert result[2]["markers"]["page"] == "1"

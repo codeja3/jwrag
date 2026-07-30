@@ -37,8 +37,7 @@ class SynthesisOption:
 class Reference:
     """Immutable citation mapping to a document location."""
     filename: str
-    page: Optional[str] = None
-    paragraph: Optional[str] = None
+    markers: Dict[str, str] = dataclasses.field(default_factory=dict)
 
 
 @dataclasses.dataclass(frozen=True)

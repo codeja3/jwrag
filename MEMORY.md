@@ -20,11 +20,12 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        **Non-Goals (Out of Scope)**: Cloud integrations, multi-user/RBAC, and OCR for image-based PDFs.
 
 #### Key Architectural Decisions
-*        **Detailed Judgment References**: To ensure highly accurate and verifiable citations, context chunks are prefixed with metadata (document name, page, and paragraph identifiers). The LLM is explicitly prompted to use these prefixes to generate detailed, structured citations in the JSON output, shifting the responsibility of reference tracking directly to the synthesis engine.
+*        **Dynamic Location Markers Abstraction**: Rather than hardcoding structural identifiers (like `page` or `paragraph`), the system stores a generic `markers` dictionary in chunk metadata and `Reference` DTOs. This allows the parsers, prompt context, and TUI to dynamically extract and render any location identifier (chapter, section, clause) without schema changes.
+*        **Detailed Judgment References**: To ensure highly accurate and verifiable citations, context chunks are prefixed with metadata (document name, and dynamic location markers). The LLM is explicitly prompted to use these prefixes to generate detailed, structured citations in the JSON output, shifting the responsibility of reference tracking directly to the synthesis engine.
 *        **Data Security & Untracked Documents**: To guarantee zero data egress and prevent sensitive file leaks, all test or real files in `documents/` are strictly excluded from version control via `.gitignore`. If sensitive files are accidentally pushed, git history is rewritten and purged using `git-filter-repo` before force-pushing.
 
 ### 4. Running Checklist & Active Task Tracker
-*Current Status: Phase 9 Complete. All feature branches merged into `main`.*
+*Current Status: Phase 11 Complete. Dynamic markers and PDF Page Label Alignment implemented.*
 
 *        [x] **Phase 1: Project Setup**: `uv` init, `pyproject.toml`, and dependencies installation (`watchdog`, `pypdf`, `httpx`, `pytest`).
 *        [x] **Phase 2: Database & Core DTOs (TDD)**: Implement `dataclasses` and `SQLiteVectorStore`.
@@ -35,6 +36,8 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        [x] **Phase 7: Final Pipeline Integration**: Replace stubs in `main.py` to fully connect event handlers and search pipeline.
 *        [x] **Phase 8: Cloud Integration**: Build and integrate `CloudSynthesisEngine` and Data Sanitizer.
 *        [x] **Phase 9: Detailed Judgment References**: Update DTOs, parsers, context prefixing, and TUI formatting (TDD).
+*        [x] **Phase 10: Dynamic Location Markers**: Replaced flat page/paragraph fields with a generic `markers` dict across DTOs, parsers, prompt schema, and TUI.
+*        [x] **Phase 11: PDF Page Labels Alignment**: Update `PdfParser` to extract native `pypdf` page labels (e.g. Roman numerals) for citation alignment.
 
 ### 5. Persistent Scratchpad / Error Log
 *(Use this space to track active blockages, temporary configurations, or recurring errors across sessions)*

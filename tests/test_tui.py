@@ -21,8 +21,8 @@ def test_render_options() -> None:
 def test_render_references() -> None:
     renderer = TUIRenderer()
     ref1 = Reference(filename="doc1.txt")
-    ref2 = Reference(filename="doc2.pdf", page="10", paragraph="4")
+    ref2 = Reference(filename="doc2.pdf", markers={"chapter": "5", "clause": "2"})
     result = SynthesisResult(query="Q", options=[], references=[ref1, ref2])
     output = renderer.render_result(result)
     assert "- doc1.txt" in output
-    assert "- doc2.pdf (Page: 10, Paragraph: 4)" in output
+    assert "- doc2.pdf (Chapter: 5, Clause: 2)" in output

@@ -23,10 +23,8 @@ class TUIRenderer:
         for ref in references:
             ref_str = ref.filename
             parts = []
-            if ref.page:
-                parts.append(f"Page: {ref.page}")
-            if ref.paragraph:
-                parts.append(f"Paragraph: {ref.paragraph}")
+            for key, val in ref.markers.items():
+                parts.append(f"{key.capitalize()}: {val}")
             if parts:
                 ref_str += f" ({', '.join(parts)})"
             output += f"- {ref_str}\n"

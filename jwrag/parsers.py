@@ -39,8 +39,10 @@ class TextMarkdownParser(IDocumentParser):
             for i, p in enumerate(paragraphs):
                 extracted.append({
                     "text": p,
-                    "page_number": 1,
-                    "paragraph": i + 1
+                    "markers": {
+                        "page": "1",
+                        "paragraph": str(i + 1)
+                    }
                 })
                 
             logger.info(f"Successfully parsed text/markdown file: {filepath} ({len(extracted)} paragraphs)")
@@ -79,15 +81,23 @@ class PdfParser(IDocumentParser):
         try:
             with open(filepath, "rb") as f:
                 reader = pypdf.PdfReader(f)
+                page_labels = getattr(reader, "page_labels", [])
                 for page_num in range(len(reader.pages)):
-                    page_text = reader.pages[page_num].extract_text() or ""
-                    paragraphs = [p.strip() for p in page_text.split("\n\n") if p.strip()]
-                    for i, p in enumerate(paragraphs):
-                        extracted_pages.append({
-                            "text": p,
-                            "page_number": page_num + 1,
-                            "paragraph": i + 1
-                        })
+                    # Use string label if available, fallback to 1-indexed number
+                    page_label = str(page_labels[page_num]) if page_labels and page_num < len(page_labels) else str(page_num + 1)
+                    
+                    page = reader.pages[page_num]
+                    text = page.extract_text()
+                    if text:
+                        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+                        for i, p in enumerate(paragraphs):
+                            extracted_pages.append({
+                                "text": p,
+                                "markers": {
+                                    "page": page_label,
+                                    "paragraph": str(i + 1)
+                                }
+                            })
             logger.info(f"Successfully parsed PDF file: {filepath} ({len(extracted_pages)} paragraphs extracted from {len(reader.pages)} pages)")
         except Exception as e:
             logger.error(f"Failed to parse PDF file {filepath}: {e}")

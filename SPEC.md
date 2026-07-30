@@ -111,8 +111,7 @@ class SynthesisOption:
 @dataclasses.dataclass(frozen=True)
 class Reference:
     filename: str
-    page: Optional[str] = None
-    paragraph: Optional[str] = None
+    markers: Dict[str, str] = dataclasses.field(default_factory=dict)
 
 @dataclasses.dataclass(frozen=True)
 class SynthesisResult:
@@ -141,7 +140,7 @@ To maintain a strict offline, air-gapped status, JWRAG utilizes local embedding 
    - Chunk Size: 1,024 characters (approx.   250–300 tokens). 
    - Recommended Overlap: 150–200 characters (approx.   15–20%). 
    - Separators: Maintain the hierarchy ["\n\n", "\n", ". ", " ", ""] to prioritize splitting at paragraphs and sentences before forcing a character count cut. 
-- **Metadata Tagging:** Each chunk is tagged with its source file path, name, page number (for PDFs), paragraph identifier (number or other diacritic marks), and hash.
+- **Metadata Tagging:** Each chunk is tagged with its source file path, name, hash, and dynamically extracted positional markers (e.g., page, paragraph, chapter, section).
 
 ### 3. Judgment Synthesis (LLM)
 - **Model:** Local Ollama model configured via environment variable; default to `gemma4:26b-mlx`.
@@ -170,16 +169,18 @@ INSTRUCTIONS:
    "references": [
      {
        "filename": "document_name.pdf",
-       "page": "12",
-       "paragraph": "3"
+       "markers": {
+         "page": "12",
+         "paragraph": "3"
+       }
      }
    ]
 }
-5. Populate the `references` array using the metadata provided in the CONTEXT blocks. Include the document name, page, and paragraph for each cited source.
+5. Populate the `references` array using the metadata provided in the CONTEXT blocks. Include the document name and any location markers (e.g., chapter, page, paragraph) for each cited source.
 
 ---
 CONTEXT:
-(Each chunk will be prefixed with [Document: {filename}, Page: {page}, Paragraph: {paragraph}])
+(Each chunk will be prefixed with [Document: {filename}, Markers: {markers}])
 {context_text}
 ---
 USER QUERY:
@@ -313,7 +314,7 @@ class ISynthesisEngine(abc.ABC):
     - Extract and validate JSON response, including the generated references.
 5. **TUI Output Formatting:**
     - Display perspectives in user-friendly CLI blocks.
-    - Print clean "References" section at bottom, explicitly listing the document names, pages, and paragraphs as returned by the LLM.
+    - Print clean "References" section at bottom, explicitly listing the document names and dynamically rendering all returned location markers.
 
 ### 5. LLM Response Parsing & Retry-Fallback Mechanism
 To mitigate LLM output formatting drift and ensure robust JSON extraction, the Synthesis Engine must implement a strict multi-stage parsing pipeline with automatic retries:

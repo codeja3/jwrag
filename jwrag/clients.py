@@ -41,9 +41,8 @@ class OllamaSynthesisEngine(ISynthesisEngine):
         context_blocks = []
         for chunk in chunks:
             fname = chunk.metadata.get("filename", "Unknown")
-            page = chunk.metadata.get("page_number", "Unknown")
-            para = chunk.metadata.get("paragraph", "Unknown")
-            context_blocks.append(f"[Document: {fname}, Page: {page}, Paragraph: {para}]\n{chunk.text_content}")
+            markers = chunk.metadata.get("markers", {})
+            context_blocks.append(f"[Document: {fname}, Markers: {markers}]\n{chunk.text_content}")
             
         context_text = "\n\n---\n\n".join(context_blocks)
         
@@ -69,12 +68,14 @@ INSTRUCTIONS:
      "references": [
        {{
          "filename": "document_name.pdf",
-         "page": "12",
-         "paragraph": "3"
+         "markers": {{
+           "page": "12",
+           "paragraph": "3"
+         }}
        }}
      ]
 }}
-5. Populate the `references` array using the metadata provided in the CONTEXT blocks. Include the document name, page, and paragraph for each cited source.
+5. Populate the `references` array using the metadata provided in the CONTEXT blocks. Include the document name and any location markers (e.g., chapter, page, paragraph) for each cited source.
 
 ---
 CONTEXT:
@@ -152,10 +153,10 @@ USER QUERY:
             
         references = []
         for ref in parsed_data.get("references", []):
+            markers = ref.get("markers", {})
             references.append(Reference(
                 filename=ref.get("filename", "Unknown"),
-                page=str(ref.get("page", "")) if ref.get("page") else None,
-                paragraph=str(ref.get("paragraph", "")) if ref.get("paragraph") else None
+                markers={str(k): str(v) for k, v in markers.items()}
             ))
             
         return SynthesisResult(query=query, options=synthesis_options, references=references)

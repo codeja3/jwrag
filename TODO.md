@@ -71,3 +71,15 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 - [x] **Implement**: Modify `ISynthesisEngine` implementations to prefix context blocks with metadata and parse detailed `references`.
 - [x] **Test**: Write tests for formatting the detailed references section in the TUI output.
 - [x] **Implement**: Update TUI formatting to display the detailed references cleanly at the bottom of the output.
+
+## Phase 10: Dynamic Location Markers Abstraction
+- [x] **Test**: Write failing test for `Reference` DTO and parsers (Text/PDF) storing a generic `markers` dictionary instead of hardcoded page/paragraph fields.
+- [x] **Implement**: Update `Reference` DTO, chunk metadata, and document parsers to use dynamic dictionaries (e.g. `{"page": "1", "paragraph": "2"}`).
+- [x] **Test**: Write failing test for LLM context prefixing and JSON parsing using the generic `markers` structure.
+- [x] **Implement**: Update `ISynthesisEngine` implementations to render `[Document: X, Markers: {...}]` and parse the new JSON schema.
+- [x] **Test**: Write failing test for TUI renderer outputting dynamic markers.
+- [x] **Implement**: Update `cli.py` to loop through `markers` dictionary in the References section.
+
+## Phase 11: PDF Page Labels Alignment
+- [x] **Test**: Write failing test in `test_parser.py` that verifies `PdfParser` uses native PDF page labels (extracting them into `markers["page"]`) instead of the absolute page index.
+- [x] **Implement**: Update `PdfParser` to extract `reader.page_labels` and apply them.

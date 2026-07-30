@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import List, Dict, Any
 import pypdf
@@ -58,36 +59,49 @@ class PdfParser(IDocumentParser):
     SUPPORTED_EXTENSIONS = {".pdf"}
 
     def can_parse(self, filepath: Path) -> bool:
-        """Checks if the file extension is supported.
-        
-        Args:
-            filepath: The path to the file to check.
-            
-        Returns:
-            True if the file extension matches supported types, False otherwise.
-        """
+        """Checks if the file extension is supported."""
         return filepath.suffix.lower() in self.SUPPORTED_EXTENSIONS
 
-    def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
-        """Extracts text content page-by-page from a PDF.
-        
-        Args:
-            filepath: The path to the PDF file to parse.
+    def _extract_printed_page_number(self, text: str) -> str:
+        """Heuristically scans header/footer for page numbers."""
+        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        if not lines:
+            return ""
             
-        Returns:
-            A list of dicts, each containing 'text' and 'page_number'.
-        """
+        # Match digits or roman numerals, optionally prefixed with 'Page '
+        pattern = re.compile(r'^(?:Page\s*)?(\d+|[ivxlc]+)$', re.IGNORECASE)
+        
+        match_top = pattern.match(lines[0])
+        if match_top:
+            return match_top.group(1)
+            
+        if len(lines) > 1:
+            match_bottom = pattern.match(lines[-1])
+            if match_bottom:
+                return match_bottom.group(1)
+                
+        return ""
+
+    def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
         extracted_pages = []
         try:
             with open(filepath, "rb") as f:
                 reader = pypdf.PdfReader(f)
                 page_labels = getattr(reader, "page_labels", [])
                 for page_num in range(len(reader.pages)):
-                    # Use string label if available, fallback to 1-indexed number
-                    page_label = str(page_labels[page_num]) if page_labels and page_num < len(page_labels) else str(page_num + 1)
-                    
                     page = reader.pages[page_num]
                     text = page.extract_text()
+                    
+                    # 1. Try native PDF labels
+                    if page_labels and page_num < len(page_labels):
+                        page_label = str(page_labels[page_num])
+                    # 2. Try heuristic text extraction from header/footer
+                    elif text and self._extract_printed_page_number(text):
+                        page_label = self._extract_printed_page_number(text)
+                    # 3. Fallback to absolute index
+                    else:
+                        page_label = str(page_num + 1)
+                        
                     if text:
                         paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
                         for i, p in enumerate(paragraphs):

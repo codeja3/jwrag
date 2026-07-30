@@ -115,3 +115,27 @@ def test_pdf_parser_extracts_page_labels(mocker) -> None:
     assert result[0]["markers"]["page"] == "i"
     assert result[1]["markers"]["page"] == "ii"
     assert result[2]["markers"]["page"] == "1"
+
+
+def test_pdf_parser_heuristic_fallback(mocker) -> None:
+    # Simulate a PDF page with 'Page 45' at the top
+    mock_page_top = mocker.MagicMock()
+    mock_page_top.extract_text.return_value = "Page 45\n\nSome actual paragraph content.\n\nMore text."
+    
+    # Simulate a PDF page with roman numeral 'ix' at the bottom
+    mock_page_bottom = mocker.MagicMock()
+    mock_page_bottom.extract_text.return_value = "Content here.\n\nix"
+    
+    mock_reader = mocker.MagicMock()
+    mock_reader.pages = [mock_page_top, mock_page_bottom]
+    # NO page_labels provided to force fallback
+    mock_reader.page_labels = []
+    
+    parser = PdfParser()
+    mocker.patch("jwrag.parsers.pypdf.PdfReader", return_value=mock_reader)
+    mocker.patch("builtins.open", mocker.mock_open())
+    result = parser.extract_text_with_metadata(Path("dummy.pdf"))
+    
+    assert result[0]["markers"]["page"] == "45"
+    # The bottom marker should be pulled for the second page
+    assert result[-1]["markers"]["page"] == "ix"

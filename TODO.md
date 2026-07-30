@@ -83,3 +83,7 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 ## Phase 11: PDF Page Labels Alignment
 - [x] **Test**: Write failing test in `test_parser.py` that verifies `PdfParser` uses native PDF page labels (extracting them into `markers["page"]`) instead of the absolute page index.
 - [x] **Implement**: Update `PdfParser` to extract `reader.page_labels` and apply them.
+
+## Phase 12: Heuristic PDF Page Parsing
+- [x] **Test**: Write failing test in `test_parser.py` that verifies `PdfParser` uses a heuristic fallback to parse physical page numbers from text headers/footers if `page_labels` is missing.
+- [x] **Implement**: Write `_extract_printed_page_number` using regex matching on first/last text lines and integrate into `PdfParser`.

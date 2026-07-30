@@ -19,7 +19,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Synchronization Accuracy: 100% of document creations, modifications, and deletions are accurately reflected in the search index without manual intervention.
 
-* Synthesis Compliance: Every qualified query successfully yields multiple independent judgment options alongside clear, unambiguous file citations, including the document name and relevant page (using physical printed page labels, e.g. roman numerals) and paragraph (with a number if exists or other diacritic marks).
+* Synthesis Compliance: Every qualified query successfully yields multiple independent judgment options alongside clear, unambiguous file citations, including the document name and relevant page (using physical printed page labels extracted via metadata or heuristic header/footer parsing) and paragraph (with a number if exists or other diacritic marks).
 
 ## Scope (In / Out)
 

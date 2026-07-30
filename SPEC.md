@@ -135,7 +135,7 @@ To maintain a strict offline, air-gapped status, JWRAG utilizes local embedding 
 ### 2. Context Ingestion & Chunking
 - **Text Parsing:** 
    - Standard text (`.txt`) and Markdown (`.md`) files are read as raw UTF-8.
-   - Searchable PDFs (`.pdf`) are parsed using `pypdf` to extract raw text blocks page-by-page.
+   - Searchable PDFs (`.pdf`) are parsed using `pypdf` to extract raw text blocks page-by-page. If native `page_labels` metadata is missing, a heuristic text scanner extracts printed page numbers from headers and footers.
 - **Chunking Strategy:** 
    - Chunk Size: 1,024 characters (approx.   250–300 tokens). 
    - Recommended Overlap: 150–200 characters (approx.   15–20%). 

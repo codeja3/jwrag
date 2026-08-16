@@ -22,6 +22,50 @@ def int_to_roman(n: int) -> str:
     return roman_num
 
 
+def split_paragraphs(text: str) -> List[str]:
+    """Splits raw text into distinct paragraphs using double newlines and numbered paragraph markers."""
+    text = text.replace('\xa0', ' ')
+    lines = text.split('\n')
+    paragraphs = []
+    current_para = []
+    
+    num_pattern = re.compile(r'^(?:¶\s*)?(\d+)\.\s+')
+    paren_pattern = re.compile(r'^\(([0-9]+|[a-z])\)\s+')
+    heading_pattern = re.compile(r'^(?:#+\s*)?(?:CHAPTER|Chapter|SECTION|Section|§)\s+', re.I)
+    
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            if current_para:
+                paragraphs.append('\n'.join(current_para))
+                current_para = []
+            continue
+        
+        if (num_pattern.match(stripped) or paren_pattern.match(stripped) or heading_pattern.match(stripped)) and current_para:
+            paragraphs.append('\n'.join(current_para))
+            current_para = []
+            
+        current_para.append(stripped)
+        
+    if current_para:
+        paragraphs.append('\n'.join(current_para))
+    return [p for p in paragraphs if p.strip()]
+
+
+def extract_paragraph_number(paragraph: str, fallback_index: int) -> str:
+    """Extracts explicit printed paragraph numbers if present, otherwise returns fallback index."""
+    num_pattern = re.compile(r'^(?:¶\s*)?(\d+)\.\s+')
+    paren_pattern = re.compile(r'^\(([0-9]+|[a-z])\)\s+')
+    
+    m = num_pattern.match(paragraph.strip())
+    if m:
+        return m.group(1)
+    m_paren = paren_pattern.match(paragraph.strip())
+    if m_paren:
+        return f"({m_paren.group(1)})"
+    return str(fallback_index)
+
+
 class TextMarkdownParser(IDocumentParser):
     """Parser for standard text (.txt) and Markdown (.md) files."""
 
@@ -37,7 +81,7 @@ class TextMarkdownParser(IDocumentParser):
             with open(filepath, "r", encoding="utf-8") as f:
                 text = f.read()
             
-            paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+            paragraphs = split_paragraphs(text)
             extracted = []
             current_chapter = None
             current_section = None
@@ -46,7 +90,6 @@ class TextMarkdownParser(IDocumentParser):
             sec_pattern = re.compile(r'(?:^|\n)(?:#+\s*)?(?:Section|SECTION|§)\s*([0-9.]+)', re.IGNORECASE)
             
             for i, p in enumerate(paragraphs):
-                # Detect chapter/section in paragraph
                 ch_match = ch_pattern.search(p)
                 if ch_match:
                     current_chapter = ch_match.group(1)
@@ -56,9 +99,10 @@ class TextMarkdownParser(IDocumentParser):
                 if sec_match:
                     current_section = sec_match.group(1)
                     
+                para_num = extract_paragraph_number(p, i + 1)
                 markers: Dict[str, str] = {
                     "page": "1",
-                    "paragraph": str(i + 1)
+                    "paragraph": para_num
                 }
                 if current_chapter:
                     markers["chapter"] = current_chapter
@@ -131,7 +175,6 @@ class PdfParser(IDocumentParser):
         num_pages = len(reader.pages)
         if num_pages < 5: return 0
         
-        # 1. Scan last 20% of pages for an index
         start_index_scan = max(0, int(num_pages * 0.8))
         index_text = ""
         for i in range(start_index_scan, num_pages):
@@ -141,11 +184,9 @@ class PdfParser(IDocumentParser):
                 
         if not index_text: return 0
         
-        # 2. Extract terms: Word(s) followed by dots/spaces and a number
         pattern = re.compile(r'^([A-Za-z]+(?:[ \t]+[A-Za-z]+){0,2})[ \t]*(?:\.+|,|[ \t])[ \t]*(\d+)$', re.MULTILINE)
         matches = pattern.findall(index_text)
         
-        # 3. Find terms in the document to establish offset consensus
         offsets = []
         page_texts = {}
         
@@ -160,7 +201,7 @@ class PdfParser(IDocumentParser):
                     page_texts[abs_page] = reader.pages[abs_page].extract_text() or ""
                     
                 if term_clean.lower() in page_texts[abs_page].lower():
-                    offset = abs_page - (printed_page - 1)  # offset = abs_page - printed_index (0-based)
+                    offset = abs_page - (printed_page - 1)
                     if offset >= 0:
                         offsets.append(offset)
                         break
@@ -168,8 +209,30 @@ class PdfParser(IDocumentParser):
         if offsets:
             from collections import Counter
             most_common = Counter(offsets).most_common(1)
-            if most_common[0][1] >= 1: # Agreement found
+            if most_common[0][1] >= 1:
                 return most_common[0][0]
+        return 0
+
+    def _detect_frontmatter_offset(self, reader: pypdf.PdfReader) -> int:
+        """Detects the index where body content (Chapter 1) begins after front matter."""
+        num_pages = len(reader.pages)
+        found_frontmatter = False
+        
+        fm_patterns = [
+            re.compile(r'©\s*\d{4}|Watch\s*Tower|This publication is not for sale|All rights reserved', re.I),
+            re.compile(r'^\s*Contents\s*$|^\s*CONTENTS\s*$', re.M),
+            re.compile(r'^\s*Introduction\s*$|^\s*INTRODUCTION\s*$', re.M)
+        ]
+        ch1_pattern = re.compile(r'CHAPTER\s*(?:1|I)\b|Chapter\s*(?:1|I)\b', re.I)
+        
+        for i in range(min(10, num_pages)):
+            text = (reader.pages[i].extract_text() or '').replace('\xa0', ' ')
+            if any(p.search(text) for p in fm_patterns):
+                found_frontmatter = True
+            if ch1_pattern.search(text):
+                if found_frontmatter:
+                    return i
+                break
         return 0
 
     def extract_text_with_metadata(self, filepath: Path) -> List[Dict[str, Any]]:
@@ -180,6 +243,8 @@ class PdfParser(IDocumentParser):
                 has_native_labels = self._has_native_page_labels(reader)
                 page_labels = getattr(reader, "page_labels", []) if has_native_labels else []
                 calibration_offset = self._calibrate_page_offset(reader)
+                fm_offset = self._detect_frontmatter_offset(reader)
+                effective_offset = calibration_offset if calibration_offset > 0 else fm_offset
                 
                 current_chapter = None
                 current_section = None
@@ -193,12 +258,12 @@ class PdfParser(IDocumentParser):
                     # 1. Try native PDF labels
                     if page_labels and page_num < len(page_labels):
                         page_label = str(page_labels[page_num])
-                    # 2. Try index-based calibration
-                    elif calibration_offset > 0:
-                        if page_num < calibration_offset:
+                    # 2. Try index-based or front-matter calibration
+                    elif effective_offset > 0:
+                        if page_num < effective_offset:
                             page_label = int_to_roman(page_num + 1)
                         else:
-                            page_label = str(page_num - calibration_offset + 1)
+                            page_label = str(page_num - effective_offset + 1)
                     # 3. Try heuristic text extraction from header/footer
                     elif text and self._extract_printed_page_number(text):
                         page_label = self._extract_printed_page_number(text)
@@ -207,7 +272,7 @@ class PdfParser(IDocumentParser):
                         page_label = str(page_num + 1)
                         
                     if text:
-                        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+                        paragraphs = split_paragraphs(text)
                         for i, p in enumerate(paragraphs):
                             ch_match = ch_pattern.search(p)
                             if ch_match:
@@ -218,9 +283,10 @@ class PdfParser(IDocumentParser):
                             if sec_match:
                                 current_section = sec_match.group(1)
                                 
+                            para_num = extract_paragraph_number(p, i + 1)
                             markers: Dict[str, str] = {
                                 "page": page_label,
-                                "paragraph": str(i + 1)
+                                "paragraph": para_num
                             }
                             if current_chapter:
                                 markers["chapter"] = current_chapter

@@ -273,3 +273,67 @@ def test_pdf_parser_extracts_chapter_headings(mocker) -> None:
     assert result[3]["markers"]["section"] == "4.2"
     assert result[3]["markers"]["paragraph"] == "2"
 
+
+def test_pdf_parser_extracts_printed_paragraph_numbers(mocker) -> None:
+    mock_page = mocker.MagicMock()
+    mock_page.extract_text.return_value = (
+        "How Elders Work Together Chapter 1\n"
+        "9. After the Meeting: The coordinator ensures follow-through.\n"
+        "10. The Congregation Service Committee consists of three elders.\n"
+        "11. The circuit overseer appoints the coordinator."
+    )
+    
+    mock_reader = mocker.MagicMock()
+    mock_reader.pages = [mock_page]
+    mock_reader.page_labels = []
+    mock_reader.root_object = {}
+    
+    parser = PdfParser()
+    mocker.patch("jwrag.parsers.pypdf.PdfReader", return_value=mock_reader)
+    mocker.patch("builtins.open", mocker.mock_open())
+    
+    result = parser.extract_text_with_metadata(Path("dummy.pdf"))
+    
+    # Check that paragraphs 9, 10, 11 are identified by their printed numbers
+    assert len(result) >= 3
+    para_numbers = [r["markers"]["paragraph"] for r in result if "paragraph" in r["markers"]]
+    assert "9" in para_numbers
+    assert "10" in para_numbers
+    assert "11" in para_numbers
+
+
+def test_pdf_parser_frontmatter_detection_offsets_publisher_pages(mocker) -> None:
+    mock_p0 = mocker.MagicMock()
+    mock_p0.extract_text.return_value = "Shepherd the Flock of God\nsfg-E"
+    
+    mock_p1 = mocker.MagicMock()
+    mock_p1.extract_text.return_value = "© 2025 Watch Tower Bible and Tract Society\nThis publication is not for sale."
+    
+    mock_p2 = mocker.MagicMock()
+    mock_p2.extract_text.return_value = "Contents\nChapters\n1 How Elders Work"
+    
+    mock_p3 = mocker.MagicMock()
+    mock_p3.extract_text.return_value = "CHAPTER 1: HOW ELDERS WORK TOGETHER\n1. Jehovah has appointed Jesus Christ."
+    
+    mock_reader = mocker.MagicMock()
+    mock_reader.pages = [mock_p0, mock_p1, mock_p2, mock_p3]
+    mock_reader.page_labels = ["1", "2", "3", "4"]
+    mock_reader.root_object = {}
+    mock_reader.trailer = {"/Root": {}}
+    
+    parser = PdfParser()
+    mocker.patch("jwrag.parsers.pypdf.PdfReader", return_value=mock_reader)
+    mocker.patch("builtins.open", mocker.mock_open())
+    
+    result = parser.extract_text_with_metadata(Path("dummy.pdf"))
+    
+    # Front-matter pages 0, 1, 2 should be Roman numerals
+    pages = [r["markers"]["page"] for r in result]
+    assert pages[0] == "i"
+    assert pages[1] == "ii"
+    assert pages[2] == "iii"
+    # Chapter 1 page should start at physical printed page '1'
+    ch1_items = [r for r in result if r["markers"].get("chapter") == "1"]
+    assert ch1_items[0]["markers"]["page"] == "1"
+
+

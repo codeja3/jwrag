@@ -69,6 +69,7 @@ INSTRUCTIONS:
        {{
          "filename": "document_name.pdf",
          "markers": {{
+           "chapter": "2",
            "page": "12",
            "paragraph": "3"
          }}

@@ -20,10 +20,23 @@ class TUIRenderer:
         if not references:
             return ""
         output = "\n--- References ---\n"
+        order = ["chapter", "section", "clause", "page", "paragraph"]
         for ref in references:
             ref_str = ref.filename
             parts = []
-            for key, val in ref.markers.items():
+            markers = ref.markers.copy()
+            for key in order:
+                if key in markers:
+                    val = markers.pop(key)
+                    if key == "chapter":
+                        parts.append(f"Ch. {val}")
+                    elif key in ("section", "clause"):
+                        parts.append(f"§ {val}")
+                    elif key == "page":
+                        parts.append(f"p. {val}")
+                    elif key == "paragraph":
+                        parts.append(f"¶ {val}")
+            for key, val in markers.items():
                 parts.append(f"{key.capitalize()}: {val}")
             if parts:
                 ref_str += f" ({', '.join(parts)})"

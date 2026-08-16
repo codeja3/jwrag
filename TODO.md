@@ -91,3 +91,17 @@ This `TODO.md` defines the execution plan for the JWRAG system.
 ## Phase 13: Index-Based Page Calibration
 - [x] **Test**: Write failing test in `test_parser.py` for automated page offset calculation via topic index scanning.
 - [x] **Implement**: Write `_calibrate_page_offset` in `PdfParser` which samples 5-10 terms from the document's subject index (at the end of the file) and cross-references them against absolute text pages to establish an offset.
+
+## Phase 14: Diacritic Citations and Front-Matter Page Calibration
+- [x] **Task 14.1 (TDD)**: Native `/PageLabels` Catalog Check and Front-Matter Roman Numeral Offset in `PdfParser`
+  - [x] **Test**: Write failing test in `test_parser.py` verifying that when `/PageLabels` catalog is missing from PDF root, synthetic 1..N numbers are ignored in favor of index offset/heuristics, and pages preceding the body page 1 are labeled as Roman numerals (`i`, `ii`, `iii`, etc.).
+  - [x] **Implement**: Update `PdfParser` to check `reader.root_object.get("/PageLabels")` and apply Roman numeral formatting to front-matter/pre-offset pages.
+- [x] **Task 14.2 (TDD)**: Chapter & Section Heading Extraction in `TextMarkdownParser` and `PdfParser`
+  - [x] **Test**: Write failing tests in `test_parser.py` verifying extraction of `chapter` and `section` markers from text/markdown and PDF documents.
+  - [x] **Implement**: Add chapter/section regex scanning (`^#+\s+(?:Chapter|Section)\s+`, `^Chapter\s+([0-9IVXLCDM]+)`, `^§\s*([0-9.]+)`, etc.) across parsers and attach to chunk markers.
+- [x] **Task 14.3 (TDD)**: Typographic Diacritic Rendering in `TUIRenderer`
+  - [x] **Test**: Write failing test in `test_tui.py` for rendering citations with `p.`, `¶`, `§`, and `Ch.`.
+  - [x] **Implement**: Update `TUIRenderer.render_references` in `cli.py` to format markers with standard typographic diacritics.
+- [x] **Task 14.4 (TDD)**: Synthesis Prompt & Engine Updates
+  - [x] **Test**: Write/update tests in `test_ollama_client.py` and `test_cloud_client.py` verifying context block prefixes and prompt instructions include chapter/section and diacritic citation guidance.
+  - [x] **Implement**: Update `OllamaSynthesisEngine` and `CloudSynthesisEngine` prompts with chapter/section and diacritic examples.

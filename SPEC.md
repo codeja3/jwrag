@@ -133,14 +133,22 @@ To maintain a strict offline, air-gapped status, JWRAG utilizes local embedding 
 - **Retrieval:** Cosine similarity calculation is implemented locally in Python using `numpy` over the fetched embeddings BLOBs from the SQLite database.
 
 ### 2. Context Ingestion & Chunking
-- **Text Parsing:** 
+- **Text & Markdown Parsing:** 
    - Standard text (`.txt`) and Markdown (`.md`) files are read as raw UTF-8.
-   - Searchable PDFs (`.pdf`) are parsed using `pypdf` to extract raw text blocks page-by-page. If native `page_labels` metadata is missing, the parser attempts an automated index-based calibration (sampling subject index terms and cross-referencing their location in the document to calculate an absolute-to-physical page offset). As a final fallback, it scans headers and footers.
+   - Scans text line-by-line for structural chapter/section headings (e.g. `^#+\s+(?:Chapter|Section)\s+.*`, `^Chapter\s+([0-9IVXLCDM]+)`, `^§\s*([0-9.]+)`) to track active `chapter` and `section` markers for subsequent paragraphs.
+- **Searchable PDF Parsing:** 
+   - Parsed using `pypdf` to extract raw text blocks page-by-page.
+   - **Page Label & Publisher Offset Calibration:**
+     - Explicitly checks whether a true `/PageLabels` dictionary exists in the PDF root catalog (`reader.root_object.get("/PageLabels")` or `reader.trailer["/Root"]`). If absent, ignores default synthetic sequential numbers.
+     - Runs index-based calibration and header/footer physical page detection to determine body page offset $K$.
+     - Pages $0 \dots K-1$ (publisher/front matter) receive Roman numerals (`i`, `ii`, `iii`, etc.), while body pages start at physical printed page `1`.
+   - **Chapter & Section Extraction:**
+     - Scans extracted text on each page for chapter headers (`Chapter \d+`, `CHAPTER [IVXLCDM]+`, `§ \d+`, `Section \d+`) to track the current chapter/section in chunk metadata.
 - **Chunking Strategy:** 
-   - Chunk Size: 1,024 characters (approx.   250–300 tokens). 
-   - Recommended Overlap: 150–200 characters (approx.   15–20%). 
+   - Chunk Size: 1,024 characters (approx. 250–300 tokens). 
+   - Recommended Overlap: 150–200 characters (approx. 15–20%). 
    - Separators: Maintain the hierarchy ["\n\n", "\n", ". ", " ", ""] to prioritize splitting at paragraphs and sentences before forcing a character count cut. 
-- **Metadata Tagging:** Each chunk is tagged with its source file path, name, hash, and dynamically extracted positional markers (e.g., page, paragraph, chapter, section).
+- **Metadata Tagging:** Each chunk is tagged with its source file path, name, hash, and dynamically extracted positional markers (e.g., `chapter`, `page`, `paragraph`, `section`).
 
 ### 3. Judgment Synthesis (LLM)
 - **Model:** Local Ollama model configured via environment variable; default to `gemma4:26b-mlx`.
@@ -170,6 +178,7 @@ INSTRUCTIONS:
      {
        "filename": "document_name.pdf",
        "markers": {
+         "chapter": "2",
          "page": "12",
          "paragraph": "3"
        }
@@ -314,7 +323,12 @@ class ISynthesisEngine(abc.ABC):
     - Extract and validate JSON response, including the generated references.
 5. **TUI Output Formatting:**
     - Display perspectives in user-friendly CLI blocks.
-    - Print clean "References" section at bottom, explicitly listing the document names and dynamically rendering all returned location markers.
+    - Print clean "References" section at bottom, explicitly listing the document names and dynamically rendering all returned location markers using standard legal/typographic diacritics:
+      - `page`: `p. {val}` (or Roman numerals `p. iv`)
+      - `paragraph`: `¶ {val}`
+      - `section` / `clause`: `§ {val}`
+      - `chapter`: `Ch. {val}`
+      - Example format: `- policy.pdf (Ch. 2, p. 14, ¶ 3)`
 
 ### 5. LLM Response Parsing & Retry-Fallback Mechanism
 To mitigate LLM output formatting drift and ensure robust JSON extraction, the Synthesis Engine must implement a strict multi-stage parsing pipeline with automatic retries:

@@ -21,8 +21,16 @@ def test_render_options() -> None:
 def test_render_references() -> None:
     renderer = TUIRenderer()
     ref1 = Reference(filename="doc1.txt")
-    ref2 = Reference(filename="doc2.pdf", markers={"chapter": "5", "clause": "2"})
+    ref2 = Reference(filename="doc2.pdf", markers={"chapter": "5", "section": "2", "page": "14", "paragraph": "3"})
     result = SynthesisResult(query="Q", options=[], references=[ref1, ref2])
     output = renderer.render_result(result)
     assert "- doc1.txt" in output
-    assert "- doc2.pdf (Chapter: 5, Clause: 2)" in output
+    assert "- doc2.pdf (Ch. 5, § 2, p. 14, ¶ 3)" in output
+
+
+def test_render_references_diacritics_variations() -> None:
+    renderer = TUIRenderer()
+    ref = Reference(filename="policy.pdf", markers={"page": "iv", "paragraph": "2", "clause": "7"})
+    result = SynthesisResult(query="Q", options=[], references=[ref])
+    output = renderer.render_result(result)
+    assert "- policy.pdf (§ 7, p. iv, ¶ 2)" in output

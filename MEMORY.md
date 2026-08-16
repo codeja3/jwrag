@@ -25,7 +25,7 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        **Data Security & Untracked Documents**: To guarantee zero data egress and prevent sensitive file leaks, all test or real files in `documents/` are strictly excluded from version control via `.gitignore`. If sensitive files are accidentally pushed, git history is rewritten and purged using `git-filter-repo` before force-pushing.
 
 ### 4. Running Checklist & Active Task Tracker
-*Current Status: Phase 11 Complete. Dynamic markers and PDF Page Label Alignment implemented.*
+*Current Status: Phase 14 Complete. Validated /PageLabels catalog check, Roman numeral front-matter offsets, chapter/section heading extraction, and typographic diacritic citations.*
 
 *        [x] **Phase 1: Project Setup**: `uv` init, `pyproject.toml`, and dependencies installation (`watchdog`, `pypdf`, `httpx`, `pytest`).
 *        [x] **Phase 2: Database & Core DTOs (TDD)**: Implement `dataclasses` and `SQLiteVectorStore`.
@@ -40,6 +40,7 @@ JWRAG is a 100% localized, air-gapped decision support system that watches a loc
 *        [x] **Phase 11: PDF Page Labels Alignment**: Update `PdfParser` to extract native `pypdf` page labels (e.g. Roman numerals) for citation alignment.
 *        [x] **Phase 12: Heuristic PDF Page Parsing**: Implemented regex fallback to extract physical printed page numbers directly from page headers/footers when metadata is missing.
 *        [x] **Phase 13: Index-Based Page Calibration**: Implemented a dynamic algorithm to scan the document's subject index, sample terms, and calculate an absolute-to-printed page offset via substring search consensus.
+*        [x] **Phase 14: Diacritic Citations and Front-Matter Page Calibration**: Validate `/PageLabels` catalog presence, apply Roman numeral offsets for front-matter/publisher pages, extract chapter/section headings, and render diacritics (`¶`, `§`, `p.`, `Ch.`) in TUI.
 
 ### 5. Persistent Scratchpad / Error Log
 *(Use this space to track active blockages, temporary configurations, or recurring errors across sessions)*

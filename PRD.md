@@ -19,7 +19,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Synchronization Accuracy: 100% of document creations, modifications, and deletions are accurately reflected in the search index without manual intervention.
 
-* Synthesis Compliance: Every qualified query successfully yields multiple independent judgment options alongside clear, unambiguous file citations, including the document name and relevant page (using physical printed page labels extracted via metadata, index-based calibration, or heuristic header/footer parsing) and paragraph (with a number if exists or other diacritic marks).
+* Synthesis Compliance: Every qualified query successfully yields multiple independent judgment options alongside clear, unambiguous file citations, including the document name, chapter/section (using `Ch.` or `§`), page (aligned with physical printed page labels, properly offsetting front-matter/publisher pages with Roman numerals `i, ii, ...`), and paragraph (using typographic diacritics such as `¶`).
 
 ## Scope (In / Out)
 
@@ -54,7 +54,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Cross-Document Synthesis: A user queries a complex scenario spanning multiple separate policy documents. Instead of a single response, the system presents two or three distinct scenarios (e.g., a conservative option vs. a progressive option) based on the combined data to assist in decision making.
 
-* Audit Trails: A user reviews the generated options and instantly verifies the source material via explicit citations in the terminal, including the document name, relevant page, and paragraph (with a number if exists or other diacritic marks).
+* Audit Trails: A user reviews the generated options and instantly verifies the source material via explicit citations in the terminal, including the document name, chapter/section (`Ch.`/`§`), relevant page (offsetting publisher front matter), and paragraph (`¶`).
 
 
 ## Requirements
@@ -83,7 +83,7 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 ### 4. Interactive Terminal UI (TUI)
 * The interface must be a straightforward interactive command-line environment.
 
-* Outputs must follow a strict layout: the user’s query, the structured alternative judgment options, and a standalone references section explicitly listing the names of the source documents, along with the relevant page and paragraph (with a number if exists or other diacritic marks).
+* Outputs must follow a strict layout: the user’s query, the structured alternative judgment options, and a standalone references section explicitly listing the names of the source documents, along with the relevant chapter/section, page, and paragraph rendered with standard typographic diacritics (`p.`, `¶`, `§`, `Ch.`).
 
 ### Constraints
 * Hardware and Environment: Must execute natively on a local workstation without relying on cloud-based API keys or network availability.
@@ -99,6 +99,6 @@ Professionals managing sensitive and confidential documents lack a secure, priva
 
 * Queries analyzing overlapping source text output multiple clear, non-identical judgment options.
 
-* Every terminal response lists the correct, un-hallucinated file names of the referenced documents, including the relevant page (aligned with the physical printed page labels) and paragraph (with a number if exists or other diacritic marks).
+* Every terminal response lists the correct, un-hallucinated file names of the referenced documents, including the relevant chapter/section (`Ch.`/`§`), page (aligned with physical printed page labels, properly accounting for front-matter/publisher pages), and paragraph (`¶`).
 
 * The entire pipeline passes a local network traffic audit, demonstrating perfectly air-gapped execution during indexing and inference tasks.
